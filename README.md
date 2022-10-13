@@ -1,2 +1,2 @@
-# deep-glioma-prognosis
+# deep-multimodal-glioma-prognosis
  

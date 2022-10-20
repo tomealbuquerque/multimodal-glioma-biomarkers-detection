@@ -13,8 +13,8 @@ parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mo
 parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='MultiMRI')
 parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='all')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
-parser.add_argument('--epochs', type=int, default=50)
-parser.add_argument('--batchsize', type=int, default=8)
+parser.add_argument('--epochs', type=int, default=1)
+parser.add_argument('--batchsize', type=int, default=6)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
 
@@ -26,7 +26,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from sklearn.model_selection import KFold
 import torch
 import mydataset, mymodels
-
+import os
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -102,43 +102,48 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt, verbose=True)
 train(tr, ts)
 np.savetxt('output-' + prefix + '-proba.txt', predict_proba(ts), delimiter=',')
 
-torch.save(model.state_dict(), str(prefix)+'.pth')
+
+os.makedirs("weights", exist_ok=True)
+torch.save(model.state_dict(), 'weights\\'+str(prefix)+'.pth')
 
    
-#print some metrics 
-# def predict_metrics(data):
-#     model.eval()
-#     Phat = []
-#     Y_true=[]
-#     with torch.no_grad():
-#         for XX, Y in data:
-#             XX = [X.to(device, torch.float) for X in XX]
-#             Y = Y.to(device, torch.float)
-#             Yhat = model(XX)
-#             Phat += list(Yhat.cpu().numpy())
-#             Y_true += list(Y.cpu().numpy())
-#     return Y_true, Phat
+# print some metrics 
+def predict_metrics(data):
+    model.eval()
+    Phat = []
+    Y_true=[]
+    with torch.no_grad():
+        for XX, Y in data:
+            XX = [X.to(device, torch.float) for X in XX]
+            Y = Y.to(device, torch.float)
+            Yhat = model(XX)
+            Phat += list(Yhat.cpu().numpy())
+            Y_true += list(Y.cpu().numpy())
+    return Y_true, Phat
 
 
 
-# from skimage.metrics import structural_similarity as ssim
-# from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, normalized_root_mse 
+from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, normalized_root_mse 
+from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, recall_score, precision_score
+
+data_test = DataLoader(ts_ds, 1,False,  pin_memory=True)
+Y_true, Phat = predict_metrics(data_test)
 
 
-# data_test = DataLoader(ts_ds, 1,False,  pin_memory=True)
-# Y_true, Phat = predict_metrics(data_test)
+accuracy = accuracy_score(Y_true, Phat, normalize=False)
+mae = mean_absolute_error(Y_true, Phat)
+f1 = f1_score(Y_true, Phat, average='weighted')
+recall = recall_score(Y_true, Phat, average='weighted')
+precision = precision_score(Y_true, Phat, average='weighted')
 
-# mse = np.mean([mean_squared_error(Y_true[i], Phat[i]) for i in range(len(Y_true))])
-# rmse = np.mean([normalized_root_mse(Y_true[i], Phat[i]) for i in range(len(Y_true))])
-# ssim =np.mean([ssim(Y_true[i], Phat[i],channel_axis=0) for i in range(len(Y_true))]) 
-# psnr =np.mean([peak_signal_noise_ratio(Y_true[i], Phat[i]) for i in range(len(Y_true))]) 
+os.makedirs("results", exist_ok=True)
 
-
-
-# f = open('results\\'+ str(prefix)+'.txt', 'a+')
-# f.write('\n\nModel:'+str(prefix)+
-#     ' \nMSE:'+ str(mse)+
-#     ' \nRMSE:'+ str(rmse)+
-#     ' \nSSIM:'+str(ssim)+
-#     ' \nPSNR:'+ str(psnr))
-# f.close()
+f = open('results\\'+ str(prefix)+'.txt', 'a+')
+f.write('\n\nModel:'+str(prefix)+
+    ' \naccuracy:'+ str(accuracy)+
+    ' \nmae:'+ str(mae)+
+    ' \nf1:'+str(f1)+
+    ' \nrecall:'+ str(recall)+
+    ' \nprecision:'+ str(precision))
+f.close()

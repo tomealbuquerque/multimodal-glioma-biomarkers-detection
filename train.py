@@ -12,7 +12,7 @@ parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mo
     'resnext50_32x4d', 'vgg16','wide_resnet50_2'],default='resnext50_32x4d')
 parser.add_argument('--method', choices=['Base'], default='Base')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
-parser.add_argument('--epochs', type=int, default=100)
+parser.add_argument('--epochs', type=int, default=50)
 parser.add_argument('--batchsize', type=int, default=32)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
@@ -29,10 +29,10 @@ import mydataset, mymodels
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-tr_ds = mydataset.MyDataset_MRI('train', mydataset.aug_transforms, args.fold)
-tr = DataLoader(tr_ds, args.batchsize, True)
+tr_ds = mydataset.MyDataset_MRI('train', mydataset.train_transforms, args.fold)
+tr = DataLoader(tr_ds, args.batchsize, True, pin_memory=True)
 ts_ds = mydataset.MyDataset_MRI('test', mydataset.val_transforms, args.fold)
-ts = DataLoader(ts_ds, args.batchsize)
+ts = DataLoader(ts_ds, args.batchsize, pin_memory=True)
 
 def test(val):
     model.eval()

@@ -41,7 +41,7 @@ def test(val):
         X = X.to(device, dtype=torch.float)
         Y = Y.to(device, torch.int64)
         Yhat = model(X)
-        Khat = model.to_classes(model.to_proba(Yhat), 'mode')
+        Khat = model.to_classes(model.to_proba(Yhat))
         val_avg_acc += (Y == Khat).float().mean() / len(val)
     return val_avg_acc
 
@@ -61,7 +61,7 @@ def train(tr, val, epochs=args.epochs, verbose=True):
             loss = model.loss(Yhat, Y)
             loss.backward()
             opt.step()
-            Khat = model.to_classes(model.to_proba(Yhat), 'mode')
+            Khat = model.to_classes(model.to_proba(Yhat))
             avg_acc += (Y == Khat).float().mean() / len(tr)
             avg_loss += loss / len(tr)
         dt = time() - tic

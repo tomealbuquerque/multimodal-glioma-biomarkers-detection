@@ -2,9 +2,9 @@
 """
 # =============================================================================
 # Code to visualize the patients clinical data - get some stats 
+#
+# Tomé Albuquerque
 # =============================================================================
-
-@author: Tome Albuquerque
 """
 #important imports
 import pandas as pd

@@ -64,6 +64,7 @@ class MyDataset_MRI(Dataset):
             X_t1 = self.transform(img_t1)
             X_t1ce = self.transform(img_t1ce)
             X_t2 = self.transform(img_t2)
+            
             XX = [torch.moveaxis(X_flair[0],2,0), torch.moveaxis(X_t1[0],2,0), torch.moveaxis(X_t1ce[0],2,0), torch.moveaxis(X_t2[0],2,0)]
             
             
@@ -87,20 +88,6 @@ class MyDataset_MRI(Dataset):
 
 train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), RandRotate90()])
 val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst()])
-
-# train_transforms = transforms.Compose([
-    # transforms.ToPILImage(),
-    # transforms.RandomAffine(180, (0, 0.1), (0.9, 1.1)),
-    # transforms.RandomHorizontalFlip(),
-    # transforms.RandomVerticalFlip(),
-    # transforms.ColorJitter(saturation=(0.5, 2.0)),
-#     transforms.ToTensor(),  # vgg normalization
-# ])
-
-# val_transforms = transforms.Compose([
-#     transforms.ToTensor(),  # vgg normalization
-# ])
-
 
 
 if __name__ == '__main__':

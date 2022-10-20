@@ -10,11 +10,11 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mobilenet_v2', 'resnet18',
     'resnext50_32x4d', 'vgg16','wide_resnet50_2'],default='resnext50_32x4d')
-parser.add_argument('--method', choices=['Base'], default='Base')
-parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='flair')
+parser.add_argument('--method', choices=['Base','MultiMRI'], default='MultiMRI')
+parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='all')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
 parser.add_argument('--epochs', type=int, default=50)
-parser.add_argument('--batchsize', type=int, default=32)
+parser.add_argument('--batchsize', type=int, default=4)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
 
@@ -39,11 +39,12 @@ def test(val):
     model.eval()
     val_avg_acc = 0
     for XX, Y in tqdm(val):
-        X = [X.to(device, torch.float) for X in XX]
-        if args.MRI_type == 'flair' or 't1' or 't1ce' or 't2':
-            X=X[0]
+        XX = [X.to(device, torch.float) for X in XX]
+        if args.MRI_type in ('flair','t1','t1ce','t2'):
+            XX=XX[0]
+
         Y = Y.to(device, torch.int64)
-        Yhat = model(X)
+        Yhat = model(XX)
         Khat = model.to_classes(model.to_proba(Yhat))
         val_avg_acc += (Y == Khat).float().mean() / len(val)
     return val_avg_acc
@@ -57,12 +58,13 @@ def train(tr, val, epochs=args.epochs, verbose=True):
         avg_acc = 0
         avg_loss = 0
         for XX, Y in tqdm(tr):
-            X = [X.to(device, torch.float) for X in XX]
-            if args.MRI_type == 'flair' or 't1' or 't1ce' or 't2':
-                X=X[0]
+            XX = [X.to(device, torch.float) for X in XX]
+            if args.MRI_type in ('flair','t1','t1ce', 't2'):
+                XX=XX[0]
+   
             Y = Y.to(device, torch.int64)
             opt.zero_grad()
-            Yhat = model(X)
+            Yhat = model(XX)
             loss = model.loss(Yhat, Y)
             loss.backward()
             opt.step()
@@ -82,14 +84,15 @@ def predict_proba(data):
     model.eval()
     Phat = []
     with torch.no_grad():
-        for X, _ in data:
-            if args.MRI_type == 'flair':
-                X=X[0]
-            phat = model.to_proba(model(X.to(device, dtype=torch.float)))
+        for XX, _ in data:
+            XX = [X.to(device, torch.float) for X in XX]
+            if args.MRI_type in ('flair','t1','t1ce','t2'):
+                XX=XX[0]
+            phat = model.to_proba(model(XX))
             Phat += list(phat.cpu().numpy())
     return Phat
 
-proposal = args.method in ('CO', 'CO2', 'HO2')
+
 prefix = '-'.join(f'{k}-{v}' for k, v in vars(args).items())
 
 model = getattr(mymodels, args.method)(args.architecture)

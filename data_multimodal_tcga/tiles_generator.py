@@ -16,7 +16,6 @@ from PIL import Image
 from openslide import *
 
 
-
 def get_tiles(slide_path, tile_size=512, threshold_for_otsu=0.4):
     
     '''

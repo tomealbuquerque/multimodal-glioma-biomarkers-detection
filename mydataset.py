@@ -7,11 +7,16 @@
 """
 from torch.utils.data import Dataset
 from torchvision import models, transforms
+import torch
 import pickle
 import numpy as np
 from nibabel.testing import data_path
 import nibabel as nib
 import os
+import monai
+from monai.data import ImageDataset, DataLoader
+from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, ScaleIntensity
+
 
 
 class MyDataset_MRI(Dataset):
@@ -32,26 +37,28 @@ class MyDataset_MRI(Dataset):
             Y=2
         else:
             Y=3
-        return X, Y
+        return torch.moveaxis(X[0],2,0), Y
 
     def __len__(self):
         return len(self.X)
 
+train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), RandRotate90()])
+val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst()])
 
 
 
-aug_transforms = transforms.Compose([
+# train_transforms = transforms.Compose([
     # transforms.ToPILImage(),
     # transforms.RandomAffine(180, (0, 0.1), (0.9, 1.1)),
     # transforms.RandomHorizontalFlip(),
     # transforms.RandomVerticalFlip(),
     # transforms.ColorJitter(saturation=(0.5, 2.0)),
-    transforms.ToTensor(),  # vgg normalization
-])
+#     transforms.ToTensor(),  # vgg normalization
+# ])
 
-val_transforms = transforms.Compose([
-    transforms.ToTensor(),  # vgg normalization
-])
+# val_transforms = transforms.Compose([
+#     transforms.ToTensor(),  # vgg normalization
+# ])
 
 
 
@@ -62,7 +69,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     import matplotlib.pyplot as plt
-    ds = MyDataset_MRI(args.type, aug_transforms, 0)
+    ds = MyDataset_MRI(args.type, train_transforms, 0)
     X, Y = ds[0]
     print('X:', X.min(), X.max(), X.shape, X.dtype)
 

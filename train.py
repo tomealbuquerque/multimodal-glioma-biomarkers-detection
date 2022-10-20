@@ -10,11 +10,11 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mobilenet_v2', 'resnet18',
     'resnext50_32x4d', 'vgg16','wide_resnet50_2'],default='resnext50_32x4d')
-parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='MultiMRI')
-parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='all')
+parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='UniMRI')
+parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='flair')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
-parser.add_argument('--epochs', type=int, default=1)
-parser.add_argument('--batchsize', type=int, default=6)
+parser.add_argument('--epochs', type=int, default=30)
+parser.add_argument('--batchsize', type=int, default=32)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
 
@@ -107,7 +107,9 @@ os.makedirs("weights", exist_ok=True)
 torch.save(model.state_dict(), 'weights\\'+str(prefix)+'.pth')
 
    
-# print some metrics 
+# =============================================================================
+# Print some metrics and save in 
+# =============================================================================
 def predict_metrics(data):
     model.eval()
     Phat = []
@@ -117,26 +119,24 @@ def predict_metrics(data):
             XX = [X.to(device, torch.float) for X in XX]
             Y = Y.to(device, torch.float)
             Yhat = model(XX)
-            Phat += list(Yhat.cpu().numpy())
+            Phat += list(model.to_proba(Yhat).cpu().numpy())
             Y_true += list(Y.cpu().numpy())
     return Y_true, Phat
 
 
-
-from skimage.metrics import structural_similarity as ssim
-from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, normalized_root_mse 
-from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, recall_score, precision_score
+from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, recall_score, precision_score,roc_auc_score
 
 data_test = DataLoader(ts_ds, 1,False,  pin_memory=True)
-Y_true, Phat = predict_metrics(data_test)
+Y_true, Phat_p = predict_metrics(data_test)
 
+Phat = [Phat_p[i].argmax(0) for i in range(len(Phat_p))]
 
-accuracy = accuracy_score(Y_true, Phat, normalize=False)
+accuracy = accuracy_score(Y_true, Phat, normalize=True)
 mae = mean_absolute_error(Y_true, Phat)
 f1 = f1_score(Y_true, Phat, average='weighted')
 recall = recall_score(Y_true, Phat, average='weighted')
 precision = precision_score(Y_true, Phat, average='weighted')
-
+# auc = roc_auc_score(Y_true,Phat_p, multi_class='ovr')
 os.makedirs("results", exist_ok=True)
 
 f = open('results\\'+ str(prefix)+'.txt', 'a+')
@@ -146,4 +146,5 @@ f.write('\n\nModel:'+str(prefix)+
     ' \nf1:'+str(f1)+
     ' \nrecall:'+ str(recall)+
     ' \nprecision:'+ str(precision))
+    # ' \nauc:'+ str(auc))
 f.close()

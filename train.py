@@ -37,8 +37,8 @@ ts = DataLoader(ts_ds, args.batchsize, pin_memory=True)
 def test(val):
     model.eval()
     val_avg_acc = 0
-    for X, Y in tqdm(val):
-        X = X.to(device, dtype=torch.float)
+    for XX, Y in tqdm(val):
+        X = [X.to(device, torch.float) for X in XX]
         Y = Y.to(device, torch.int64)
         Yhat = model(X)
         Khat = model.to_classes(model.to_proba(Yhat))
@@ -53,8 +53,8 @@ def train(tr, val, epochs=args.epochs, verbose=True):
         model.train()
         avg_acc = 0
         avg_loss = 0
-        for X, Y in tqdm(tr):
-            X = X.to(device, dtype=torch.float)
+        for XX, Y in tqdm(tr):
+            X = [X.to(device, torch.float) for X in XX]
             Y = Y.to(device, torch.int64)
             opt.zero_grad()
             Yhat = model(X)

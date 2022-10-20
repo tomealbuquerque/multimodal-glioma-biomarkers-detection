@@ -44,15 +44,7 @@ class Base(nn.Module):
     def to_proba(self, Yhat):
         return F.softmax(Yhat, 1)
 
-    def to_classes(self, Phat, type):
-        assert type in ('mode', 'mean', 'median')
-        if type == 'mode':
-            return Phat.argmax(1)
-        if type == 'mean':  # so-called expectation trick
-            kk = torch.arange(args.classes, device=device)
-            return torch.round(torch.sum(Yhat * kk, 1)).long()
-        if type == 'median':
-            # the weighted median is the value whose cumulative probability is 0.5
-            Pc = torch.cumsum(Phat, 1)
-            return torch.sum(Pc < 0.5, 1)
+    def to_classes(self, Phat):
+        return Phat.argmax(1)
+
 

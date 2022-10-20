@@ -78,7 +78,7 @@ for idx,pat in enumerate(df_clean['subject_id']):
                         't1':image_modalilty[1],
                         't1ce':image_modalilty[2],
                         't2':image_modalilty[3],
-                        'slide':df_clean.loc[idx,'slide_id'],
+                        'slide':os.path.join("Pathology",df_clean.loc[idx,'slide_id']),
                         'tiles_coords':get_tiles(slide_path=os.path.join("Pathology",df_clean.loc[idx,'slide_id']),
                                                  tile_size=args.tile_size, threshold_for_otsu=args.threshold_otsu_tiles),
                         'gender':df_clean.loc[idx,'is_female'],

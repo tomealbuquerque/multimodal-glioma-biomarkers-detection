@@ -1,9 +1,10 @@
+"""
 # =============================================================================
 # Code for geting Tiles from a .svs file - with Otsu threshold to remove  the background
 
 # Tomé Albuquerque
 # =============================================================================
-
+"""
 import os
 os.add_dll_directory('C:\\Users\\ge92tis\\openslide-win64-20220811\\bin')
 import openslide

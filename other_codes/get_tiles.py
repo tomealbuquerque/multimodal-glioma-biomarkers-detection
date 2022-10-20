@@ -45,7 +45,7 @@ x=data_gen.level_tiles[max_level]
 
 
 cords_deep_zoom, coords_512 = [], []
-count_224 = 0
+count_512 = 0
 x, y = 0, 0
 
 x_tiles, y_tiles = data_gen.level_tiles[max_level]
@@ -66,8 +66,8 @@ _, thumb_otsu = cv2.threshold(s , val, 255, cv2.THRESH_BINARY)
 thumbnail_otsu = Image.fromarray(np.uint8(thumb_otsu))
 
 # Generate tiles for .svs & thumbnail files
-grid_loc_224, coords_512 = [], []
-count_224 = 0
+grid_loc_512, coords_512 = [], []
+count_512 = 0
 patch_size  = 512
 
 # tile_size = patch_size - 2*overlap  
@@ -87,15 +87,15 @@ while y < y_tiles:
     while x < x_tiles:  
         with np.errstate(divide='ignore'):                                         
             new_tile_otsu = np.array(tiles_otsu.get_tile(max_level_otsu, (x, y)), dtype=np.uint8)
-        
+
             if (np.sum(new_tile_otsu, axis=2) == 0).sum() <= np.round((1-threshold)*(tile_size/down_factor)**2):
         
                 new_tile_svs = np.array(tiles_svs.get_tile(max_level_svs, (x, y)), dtype=np.uint8)
                 tile_coords = tiles_svs.get_tile_coordinates(max_level_svs, (x, y))[0]
     
-                grid_loc_224.append((x,y))
+                grid_loc_512.append((x,y))
                 coords_512.append(tile_coords)
-                count_224 += 1
+                count_512 += 1
 
         x += 1              
     y += 1
@@ -103,6 +103,6 @@ while y < y_tiles:
 
 d = {'cords':coords_512}
 df = pd.DataFrame(data=d)
-df.to_csv('cord_tilles_dim_512_slide_'+str(slide_number)+'.csv', index=True)
 
-reg = slide.read_region(coords_512[1], 0, (224, 224)).convert('RGB').save('test.jpg')
+#df.to_csv('cord_tilles_dim_512_slide_'+str(slide_number)+'.csv', index=True)
+#reg = slide.read_region(coords_512[1], 0, (224, 224)).convert('RGB').save('test.jpg')

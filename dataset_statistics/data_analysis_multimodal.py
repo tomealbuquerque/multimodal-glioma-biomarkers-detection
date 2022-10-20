@@ -19,8 +19,7 @@ data_top = list(df.columns)
 print(data_top)
 
 
-
-#print some hist plots about important features
+#print some hist plots      about important features
 
 fig = plt.figure()
 

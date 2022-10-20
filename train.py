@@ -61,7 +61,6 @@ def train(tr, val, epochs=args.epochs, verbose=True):
             XX = [X.to(device, torch.float) for X in XX]
             if args.MRI_type in ('flair','t1','t1ce', 't2'):
                 XX=XX[0]
-   
             Y = Y.to(device, torch.int64)
             opt.zero_grad()
             Yhat = model(XX)

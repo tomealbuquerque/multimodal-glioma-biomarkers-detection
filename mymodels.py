@@ -56,24 +56,27 @@ class MultiMRI(nn.Module):
         model.conv1 = nn.Conv2d(155, 64, kernel_size=7, stride=2, padding=3,bias=False)
         model = nn.Sequential(*tuple(model.children())[:-1])
         last_dimension = torch.flatten(model(torch.randn(1, 155, 240, 240))).shape[0]
+        
         self.model = nn.Sequential(
             model,
             nn.Flatten(),
             nn.Dropout(0.2),
-            nn.Linear(last_dimension, 512),
-            nn.Dropout(0.2),
-            nn.ReLU())
+            nn.Linear(last_dimension, 512))
+            # nn.Dropout(0.2),
+            # nn.ReLU())
             
 
         self.sharedlayers = nn.Sequential(
-            nn.Linear(512*4, 512),
+            nn.Linear(2048, 256),
             nn.ReLU(),
             nn.Linear(256, n_outputs)
         )
 
-    def forward(self, x):
-        Enc = [self.model(X) for X in x]
-        return self.sharedlayers(torch.stack(Enc))
+    def forward(self, XX):
+        self.Enc = [self.model(X) for X in XX]
+        print(torch.concat(self.Enc,dim=1).size())
+        out = self.sharedlayers(torch.concat(self.Enc,dim=1))
+        return out
 
     def loss(self, Yhat, Y):
         return ce(Yhat, Y)

@@ -1,2 +1,3 @@
-data_multimodal_tcga/*
+data_multimodal_tcga/Radiology/*
+data_multimodal_tcga/Pathology*
 tmp_slides_debug/*

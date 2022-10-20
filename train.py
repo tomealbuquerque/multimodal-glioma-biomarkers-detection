@@ -100,7 +100,7 @@ model = model.to(device)
 opt = optim.Adam(model.parameters(), args.lr)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt, verbose=True)
 train(tr, ts)
-np.savetxt('output-' + prefix + '-proba.txt', predict_proba(ts), delimiter=',')
+# np.savetxt('output-' + prefix + '-proba.txt', predict_proba(ts), delimiter=',')
 
 
 os.makedirs("weights", exist_ok=True)
@@ -117,6 +117,9 @@ def predict_metrics(data):
     with torch.no_grad():
         for XX, Y in data:
             XX = [X.to(device, torch.float) for X in XX]
+            if args.MRI_type in ('flair','t1','t1ce','t2'):
+                XX=XX[0]
+            
             Y = Y.to(device, torch.float)
             Yhat = model(XX)
             Phat += list(model.to_proba(Yhat).cpu().numpy())

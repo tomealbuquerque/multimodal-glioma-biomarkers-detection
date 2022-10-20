@@ -101,3 +101,44 @@ opt = optim.Adam(model.parameters(), args.lr)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt, verbose=True)
 train(tr, ts)
 np.savetxt('output-' + prefix + '-proba.txt', predict_proba(ts), delimiter=',')
+
+torch.save(model.state_dict(), str(prefix)+'.pth')
+
+   
+#print some metrics 
+# def predict_metrics(data):
+#     model.eval()
+#     Phat = []
+#     Y_true=[]
+#     with torch.no_grad():
+#         for XX, Y in data:
+#             XX = [X.to(device, torch.float) for X in XX]
+#             Y = Y.to(device, torch.float)
+#             Yhat = model(XX)
+#             Phat += list(Yhat.cpu().numpy())
+#             Y_true += list(Y.cpu().numpy())
+#     return Y_true, Phat
+
+
+
+# from skimage.metrics import structural_similarity as ssim
+# from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, normalized_root_mse 
+
+
+# data_test = DataLoader(ts_ds, 1,False,  pin_memory=True)
+# Y_true, Phat = predict_metrics(data_test)
+
+# mse = np.mean([mean_squared_error(Y_true[i], Phat[i]) for i in range(len(Y_true))])
+# rmse = np.mean([normalized_root_mse(Y_true[i], Phat[i]) for i in range(len(Y_true))])
+# ssim =np.mean([ssim(Y_true[i], Phat[i],channel_axis=0) for i in range(len(Y_true))]) 
+# psnr =np.mean([peak_signal_noise_ratio(Y_true[i], Phat[i]) for i in range(len(Y_true))]) 
+
+
+
+# f = open('results\\'+ str(prefix)+'.txt', 'a+')
+# f.write('\n\nModel:'+str(prefix)+
+#     ' \nMSE:'+ str(mse)+
+#     ' \nRMSE:'+ str(rmse)+
+#     ' \nSSIM:'+str(ssim)+
+#     ' \nPSNR:'+ str(psnr))
+# f.close()

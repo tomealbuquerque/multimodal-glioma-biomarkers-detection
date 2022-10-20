@@ -10,7 +10,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mobilenet_v2', 'resnet18',
     'resnext50_32x4d', 'vgg16','wide_resnet50_2'],default='resnext50_32x4d')
-parser.add_argument('--method', choices=['Base','MultiMRI'], default='MultiMRI')
+parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='MultiMRI')
 parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='all')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
 parser.add_argument('--epochs', type=int, default=50)

@@ -15,7 +15,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ce = nn.CrossEntropyLoss()
 
-class Base(nn.Module):
+class UniMRI(nn.Module):
     def __init__(self, pretrained_model, n_outputs=4):
         super().__init__()
         self.n_outputs = n_outputs
@@ -61,9 +61,9 @@ class MultiMRI(nn.Module):
             model,
             nn.Flatten(),
             nn.Dropout(0.2),
-            nn.Linear(last_dimension, 512))
-            # nn.Dropout(0.2),
-            # nn.ReLU())
+            nn.Linear(last_dimension, 512),
+            nn.Dropout(0.2),
+            nn.ReLU())
             
 
         self.sharedlayers = nn.Sequential(
@@ -74,7 +74,7 @@ class MultiMRI(nn.Module):
 
     def forward(self, XX):
         self.Enc = [self.model(X) for X in XX]
-        print(torch.concat(self.Enc,dim=1).size())
+        # print(torch.concat(self.Enc,dim=1).size())
         out = self.sharedlayers(torch.concat(self.Enc,dim=1))
         return out
 

@@ -14,7 +14,7 @@ parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='MultiMRI
 parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='all')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
 parser.add_argument('--epochs', type=int, default=50)
-parser.add_argument('--batchsize', type=int, default=4)
+parser.add_argument('--batchsize', type=int, default=8)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
 

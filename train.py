@@ -13,7 +13,7 @@ parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mo
 parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='UniMRI')
 parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='flair')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
-parser.add_argument('--epochs', type=int, default=30)
+parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--batchsize', type=int, default=32)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
@@ -134,11 +134,11 @@ Y_true, Phat_p = predict_metrics(data_test)
 
 Phat = [Phat_p[i].argmax(0) for i in range(len(Phat_p))]
 
-accuracy = accuracy_score(Y_true, Phat, normalize=True)
+accuracy = accuracy_score(Y_true, Phat)
 mae = mean_absolute_error(Y_true, Phat)
-f1 = f1_score(Y_true, Phat, average='weighted')
-recall = recall_score(Y_true, Phat, average='weighted')
-precision = precision_score(Y_true, Phat, average='weighted')
+f1 = f1_score(Y_true, Phat)
+recall = recall_score(Y_true, Phat)
+precision = precision_score(Y_true, Phat)
 # auc = roc_auc_score(Y_true,Phat_p, multi_class='ovr')
 os.makedirs("results", exist_ok=True)
 

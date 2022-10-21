@@ -6,7 +6,7 @@ Created on Thu Oct 20 15:09:25 2022
 """
 import sys
 import os
-os.add_dll_directory('C:\\Users\\ge92tis\\openslide-win64-20220811\\bin')
+os.add_dll_directory('C:\\Users\\albu\\openslide-win64-20220811\\bin')
 import numpy as np
 import argparse
 import random
@@ -106,5 +106,5 @@ if __name__ == '__main__':
     # train_loader = torch.utils.data.DataLoader(train_dset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=False)
     # ds = MILdataset(args.type, aug_transforms, 0)
     X = ds[1]
-    print('X:', X.min(), X.max(), X.shape, X.dtype)
+    # print('X:', X.min(), X.max(), X.shape, X.dtype)
 

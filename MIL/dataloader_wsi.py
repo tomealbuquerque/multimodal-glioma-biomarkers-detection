@@ -106,5 +106,5 @@ if __name__ == '__main__':
     # train_loader = torch.utils.data.DataLoader(train_dset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=False)
     # ds = MILdataset(args.type, aug_transforms, 0)
     X = ds[1]
-    print('X:', X.min(), X.max(), X.shape, X.dtype)
+    # print('X:', X.min(), X.max(), X.shape, X.dtype)
 

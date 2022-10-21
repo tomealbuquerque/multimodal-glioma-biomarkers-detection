@@ -6,7 +6,7 @@ Created on Thu Oct 20 15:09:25 2022
 """
 import sys
 import os
-os.add_dll_directory('C:\\Users\\ge92tis\\openslide-win64-20220811\\bin')
+os.add_dll_directory('C:\\Users\\albu\\openslide-win64-20220811\\bin')
 import numpy as np
 import argparse
 import random

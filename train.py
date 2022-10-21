@@ -10,11 +10,11 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mobilenet_v2', 'resnet18',
     'resnext50_32x4d', 'vgg16','wide_resnet50_2'],default='resnext50_32x4d')
-parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='MultiMRI')
-parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='all')
+parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='UniMRI')
+parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='flair')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
-parser.add_argument('--epochs', type=int, default=50)
-parser.add_argument('--batchsize', type=int, default=4)
+parser.add_argument('--epochs', type=int, default=100)
+parser.add_argument('--batchsize', type=int, default=32)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
 
@@ -26,7 +26,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from sklearn.model_selection import KFold
 import torch
 import mydataset, mymodels
-
+import os
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -100,45 +100,54 @@ model = model.to(device)
 opt = optim.Adam(model.parameters(), args.lr)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt, verbose=True)
 train(tr, ts)
-np.savetxt('output-' + prefix + '-proba.txt', predict_proba(ts), delimiter=',')
+# np.savetxt('output-' + prefix + '-proba.txt', predict_proba(ts), delimiter=',')
 
-torch.save(model.state_dict(), str(prefix)+'.pth')
+
+os.makedirs("weights", exist_ok=True)
+torch.save(model.state_dict(), 'weights\\'+str(prefix)+'.pth')
 
    
-#print some metrics 
-# def predict_metrics(data):
-#     model.eval()
-#     Phat = []
-#     Y_true=[]
-#     with torch.no_grad():
-#         for XX, Y in data:
-#             XX = [X.to(device, torch.float) for X in XX]
-#             Y = Y.to(device, torch.float)
-#             Yhat = model(XX)
-#             Phat += list(Yhat.cpu().numpy())
-#             Y_true += list(Y.cpu().numpy())
-#     return Y_true, Phat
+# =============================================================================
+# Print some metrics and save in 
+# =============================================================================
+def predict_metrics(data):
+    model.eval()
+    Phat = []
+    Y_true=[]
+    with torch.no_grad():
+        for XX, Y in data:
+            XX = [X.to(device, torch.float) for X in XX]
+            if args.MRI_type in ('flair','t1','t1ce','t2'):
+                XX=XX[0]
+            
+            Y = Y.to(device, torch.float)
+            Yhat = model(XX)
+            Phat += list(model.to_proba(Yhat).cpu().numpy())
+            Y_true += list(Y.cpu().numpy())
+    return Y_true, Phat
 
 
+from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, recall_score, precision_score,roc_auc_score
 
-# from skimage.metrics import structural_similarity as ssim
-# from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, normalized_root_mse 
+data_test = DataLoader(ts_ds, 1,False,  pin_memory=True)
+Y_true, Phat_p = predict_metrics(data_test)
 
+Phat = [Phat_p[i].argmax(0) for i in range(len(Phat_p))]
 
-# data_test = DataLoader(ts_ds, 1,False,  pin_memory=True)
-# Y_true, Phat = predict_metrics(data_test)
+accuracy = accuracy_score(Y_true, Phat)
+mae = mean_absolute_error(Y_true, Phat)
+f1 = f1_score(Y_true, Phat)
+recall = recall_score(Y_true, Phat)
+precision = precision_score(Y_true, Phat)
+# auc = roc_auc_score(Y_true,Phat_p, multi_class='ovr')
+os.makedirs("results", exist_ok=True)
 
-# mse = np.mean([mean_squared_error(Y_true[i], Phat[i]) for i in range(len(Y_true))])
-# rmse = np.mean([normalized_root_mse(Y_true[i], Phat[i]) for i in range(len(Y_true))])
-# ssim =np.mean([ssim(Y_true[i], Phat[i],channel_axis=0) for i in range(len(Y_true))]) 
-# psnr =np.mean([peak_signal_noise_ratio(Y_true[i], Phat[i]) for i in range(len(Y_true))]) 
-
-
-
-# f = open('results\\'+ str(prefix)+'.txt', 'a+')
-# f.write('\n\nModel:'+str(prefix)+
-#     ' \nMSE:'+ str(mse)+
-#     ' \nRMSE:'+ str(rmse)+
-#     ' \nSSIM:'+str(ssim)+
-#     ' \nPSNR:'+ str(psnr))
-# f.close()
+f = open('results\\'+ str(prefix)+'.txt', 'a+')
+f.write('\n\nModel:'+str(prefix)+
+    ' \naccuracy:'+ str(accuracy)+
+    ' \nmae:'+ str(mae)+
+    ' \nf1:'+str(f1)+
+    ' \nrecall:'+ str(recall)+
+    ' \nprecision:'+ str(precision))
+    # ' \nauc:'+ str(auc))
+f.close()

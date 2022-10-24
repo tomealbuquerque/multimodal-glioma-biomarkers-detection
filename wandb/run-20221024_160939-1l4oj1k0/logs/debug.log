@@ -1,0 +1,287 @@
+2022-10-24 16:09:39,386 INFO    MainThread:41576 [wandb_setup.py:_flush():71] setting env: {}
+2022-10-24 16:09:39,386 INFO    MainThread:41576 [wandb_setup.py:_flush():71] setting login settings: {}
+2022-10-24 16:09:39,386 INFO    MainThread:41576 [wandb_init.py:_log_setup():371] Logging user logs to C:\Users\albu\Documents\GitHub\deep-multimodal-glioma-prognosis\wandb\run-20221024_160939-1l4oj1k0\logs\debug.log
+2022-10-24 16:09:39,387 INFO    MainThread:41576 [wandb_init.py:_log_setup():372] Logging internal logs to C:\Users\albu\Documents\GitHub\deep-multimodal-glioma-prognosis\wandb\run-20221024_160939-1l4oj1k0\logs\debug-internal.log
+2022-10-24 16:09:39,387 INFO    MainThread:41576 [wandb_init.py:_jupyter_setup():321] configuring jupyter hooks <wandb.sdk.wandb_init._WandbInit object at 0x0000024A00435400>
+2022-10-24 16:09:39,387 INFO    MainThread:41576 [wandb_init.py:init():404] calling init triggers
+2022-10-24 16:09:39,387 INFO    MainThread:41576 [wandb_init.py:init():409] wandb.init called with sweep_config: {}
+config: {}
+2022-10-24 16:09:39,387 INFO    MainThread:41576 [wandb_init.py:init():424] re-initializing run, found existing run on stack: 34x0x343
+2022-10-24 16:09:39,387 INFO    MainThread:41576 [wandb_run.py:finish():1457] finishing run tomealbuquerque/deep-multimodal-glioma-prognosis/34x0x343
+2022-10-24 16:09:39,388 INFO    MainThread:41576 [wandb_run.py:_atexit_cleanup():1780] got exitcode: 0
+2022-10-24 16:09:39,388 INFO    MainThread:41576 [wandb_run.py:_restore():1752] restore
+2022-10-24 16:09:40,166 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 900
+}
+
+2022-10-24 16:09:40,306 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 900
+}
+
+2022-10-24 16:09:40,593 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 900
+}
+
+2022-10-24 16:09:41,277 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 4
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8247
+}
+
+2022-10-24 16:09:41,388 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:41,497 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:41,606 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:41,714 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:41,823 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:41,931 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:42,040 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:42,149 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:42,718 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+
+2022-10-24 16:09:43,269 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: done: true
+exit_result {
+}
+file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8463
+  total_bytes: 8463
+}
+local_info {
+}
+
+2022-10-24 16:09:44,973 INFO    MainThread:41576 [wandb_run.py:_append_history():2130] rendering history
+2022-10-24 16:09:44,974 INFO    MainThread:41576 [wandb_run.py:_append_summary():2085] rendering summary
+2022-10-24 16:09:44,974 INFO    MainThread:41576 [wandb_run.py:_append_files():2180] logging synced files
+2022-10-24 16:09:44,977 INFO    MainThread:41576 [wandb_init.py:init():460] starting backend
+2022-10-24 16:09:44,977 INFO    MainThread:41576 [backend.py:_multiprocessing_setup():99] multiprocessing start_methods=spawn, using: spawn
+2022-10-24 16:09:44,981 INFO    MainThread:41576 [backend.py:ensure_launched():216] starting backend process...
+2022-10-24 16:09:45,078 INFO    MainThread:41576 [backend.py:ensure_launched():221] started backend process with pid: 26240
+2022-10-24 16:09:45,079 INFO    MainThread:41576 [wandb_init.py:init():469] backend started and connected
+2022-10-24 16:09:45,080 INFO    MainThread:41576 [wandb_run.py:_label_probe_notebook():911] probe notebook
+2022-10-24 16:09:45,080 INFO    MainThread:41576 [wandb_run.py:_label_probe_notebook():921] Unable to probe notebook: 'NoneType' object has no attribute 'get'
+2022-10-24 16:09:45,080 INFO    MainThread:41576 [wandb_init.py:init():533] updated telemetry
+2022-10-24 16:09:45,453 INFO    MainThread:41576 [wandb_init.py:init():563] communicating current version
+2022-10-24 16:09:47,382 INFO    MainThread:41576 [wandb_init.py:init():568] got version response upgrade_message: "wandb version 0.13.4 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2022-10-24 16:09:47,383 INFO    MainThread:41576 [wandb_init.py:init():578] communicating run to backend with 30 second timeout
+2022-10-24 16:09:47,763 INFO    MainThread:41576 [wandb_init.py:init():606] starting run threads in backend
+2022-10-24 16:09:51,029 INFO    MainThread:41576 [wandb_run.py:_console_start():1810] atexit reg
+2022-10-24 16:09:51,029 INFO    MainThread:41576 [wandb_run.py:_redirect():1684] redirect: SettingsConsole.WRAP
+2022-10-24 16:09:51,029 INFO    MainThread:41576 [wandb_run.py:_redirect():1721] Wrapping output streams.
+2022-10-24 16:09:51,031 INFO    MainThread:41576 [wandb_run.py:_redirect():1745] Redirects installed.
+2022-10-24 16:09:51,031 INFO    MainThread:41576 [wandb_init.py:init():633] run started, returning control to user process
+2022-10-24 16:10:51,323 INFO    MainThread:41576 [wandb_init.py:_pause_backend():284] pausing backend
+2022-10-24 16:10:51,323 INFO    MainThread:41576 [jupyter.py:save_ipynb():374] not saving jupyter notebook
+2022-10-24 16:12:43,019 INFO    MainThread:41576 [wandb_init.py:_resume_backend():293] resuming backend
+2022-10-24 16:12:43,111 INFO    MainThread:41576 [wandb_setup.py:_flush():71] setting env: {}
+2022-10-24 16:12:43,111 INFO    MainThread:41576 [wandb_setup.py:_flush():71] setting login settings: {}
+2022-10-24 16:12:43,111 INFO    MainThread:41576 [wandb_init.py:_log_setup():371] Logging user logs to C:\Users\albu\Documents\GitHub\deep-multimodal-glioma-prognosis\wandb\run-20221024_161243-1lee8xto\logs\debug.log
+2022-10-24 16:12:43,111 INFO    MainThread:41576 [wandb_init.py:_log_setup():372] Logging internal logs to C:\Users\albu\Documents\GitHub\deep-multimodal-glioma-prognosis\wandb\run-20221024_161243-1lee8xto\logs\debug-internal.log
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [wandb_init.py:init():404] calling init triggers
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [wandb_init.py:init():409] wandb.init called with sweep_config: {}
+config: {}
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [wandb_init.py:init():424] re-initializing run, found existing run on stack: 1l4oj1k0
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [wandb_run.py:finish():1457] finishing run tomealbuquerque/deep-multimodal-glioma-prognosis/1l4oj1k0
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [jupyter.py:save_history():429] not saving jupyter history
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [jupyter.py:save_ipynb():374] not saving jupyter notebook
+2022-10-24 16:12:43,112 INFO    MainThread:41576 [wandb_init.py:_jupyter_teardown():303] cleaning up jupyter logic
+2022-10-24 16:12:43,113 INFO    MainThread:41576 [wandb_run.py:_atexit_cleanup():1780] got exitcode: 0
+2022-10-24 16:12:43,113 INFO    MainThread:41576 [wandb_run.py:_restore():1752] restore
+2022-10-24 16:12:44,123 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 900
+}
+
+2022-10-24 16:12:44,247 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 900
+}
+
+2022-10-24 16:12:44,549 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 900
+}
+
+2022-10-24 16:12:45,390 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 4
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8247
+}
+
+2022-10-24 16:12:45,501 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:45,609 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:45,718 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 900
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:45,827 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:45,935 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:46,044 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:46,152 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:46,261 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:46,836 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+
+2022-10-24 16:12:47,401 INFO    MainThread:41576 [wandb_run.py:_wait_for_finish():1912] got exit ret: done: true
+exit_result {
+}
+file_counts {
+  wandb_count: 5
+}
+pusher_stats {
+  uploaded_bytes: 8460
+  total_bytes: 8460
+}
+local_info {
+}
+
+2022-10-24 16:12:49,039 INFO    MainThread:41576 [wandb_run.py:_append_history():2130] rendering history
+2022-10-24 16:12:49,040 INFO    MainThread:41576 [wandb_run.py:_append_summary():2085] rendering summary
+2022-10-24 16:12:49,040 INFO    MainThread:41576 [wandb_run.py:_append_files():2180] logging synced files

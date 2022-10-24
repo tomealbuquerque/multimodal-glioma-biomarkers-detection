@@ -21,7 +21,7 @@ from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, 
 
 class MyDataset_MRI(Dataset):
     def __init__(self, type, transform, fold, MRI_exam):
-        self.X, self.Y = pickle.load(open(f'data_multimodal_tcga/multimodal_glioma_data.pickle', 'rb'))[fold][type]
+        self.X, self.Y = pickle.load(open(os.path.join('data_multimodal_tcga',f'multimodal_glioma_data.pickle'), 'rb'))[fold][type]
         self.transform = transform
         self.MRI_exam=MRI_exam
     def __getitem__(self, i):
@@ -76,10 +76,10 @@ class MyDataset_MRI(Dataset):
             Y=0
         elif Y==[1,0]:
             Y=1
-        elif Y==[0,1]:
-            Y=2
+        # elif Y==[0,1]:
+        #     Y=2
         else:
-            Y=3
+            Y=2
         return XX, Y
 
     def __len__(self):

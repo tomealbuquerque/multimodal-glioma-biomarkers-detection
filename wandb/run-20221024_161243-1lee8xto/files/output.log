@@ -1,0 +1,42 @@
+
+  0%|          | 0/5 [00:00<?, ?it/s]
+
+
+
+
+
+100%|██████████| 5/5 [00:36<00:00,  7.31s/it]
+ - 36s - Loss: 1.064191, Acc: 0.438988, Test Acc: 0.484375, Test Loss: 1.011592
+* Epoch 2/5
+
+
+
+
+
+100%|██████████| 5/5 [00:34<00:00,  6.97s/it]
+  0%|          | 0/5 [00:00<?, ?it/s]
+ - 34s - Loss: 0.920316, Acc: 0.564286, Test Acc: 0.484375, Test Loss: 1.034997
+
+
+
+
+
+100%|██████████| 5/5 [00:34<00:00,  6.97s/it]
+  0%|          | 0/5 [00:00<?, ?it/s]
+ - 34s - Loss: 0.791151, Acc: 0.554464, Test Acc: 0.484375, Test Loss: 1.435779
+
+
+
+
+
+100%|██████████| 5/5 [00:34<00:00,  6.98s/it]
+  0%|          | 0/5 [00:00<?, ?it/s]
+ - 34s - Loss: 0.652025, Acc: 0.598512, Test Acc: 0.484375, Test Loss: 1.786014
+
+
+
+
+
+100%|██████████| 5/5 [00:34<00:00,  6.96s/it]
+ - 34s - Loss: 0.539629, Acc: 0.758929, Test Acc: 0.484375, Test Loss: 1.576607
+C:\Users\albu\anaconda3\envs\pytorch_env\lib\site-packages\sklearn\metrics\_classification.py:1308: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.

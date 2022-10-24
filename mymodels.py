@@ -16,11 +16,12 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ce = nn.CrossEntropyLoss()
 
 class UniMRI(nn.Module):
-    def __init__(self, pretrained_model, n_outputs=4):
+    def __init__(self, pretrained_model, n_outputs=3):
         super().__init__()
         self.n_outputs = n_outputs
         model = getattr(models, pretrained_model)(pretrained=True)
         model.conv1 = nn.Conv2d(155, 64, kernel_size=7, stride=2, padding=3,bias=False)
+        # model.features[0][0] = nn.Conv2d(155, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
         model = nn.Sequential(*tuple(model.children())[:-1])
         last_dimension = torch.flatten(model(torch.randn(1, 155, 240, 240))).shape[0]
         self.model = nn.Sequential(
@@ -49,7 +50,7 @@ class UniMRI(nn.Module):
 
 
 class MultiMRI(nn.Module):
-    def __init__(self, pretrained_model, n_outputs=4):
+    def __init__(self, pretrained_model, n_outputs=3):
         super().__init__()
         self.n_outputs = n_outputs
         model = getattr(models, pretrained_model)(pretrained=True)

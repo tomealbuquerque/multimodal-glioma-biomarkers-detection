@@ -2,3 +2,5 @@ data_multimodal_tcga/Radiology/*
 data_multimodal_tcga/Pathology*
 tmp_slides_debug/*
 weights/*
+wandb/*`
+MIL/checkpoint_best.pth

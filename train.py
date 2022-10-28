@@ -13,7 +13,7 @@ parser.add_argument('--architecture', choices=['inception_v3', 'mnasnet1_0', 'mo
 parser.add_argument('--method', choices=['UniMRI','MultiMRI'], default='UniMRI')
 parser.add_argument('--MRI_type', choices=['flair', 't1', 't1ce', 't2', 'all'], default='flair')
 parser.add_argument('--fold', type=int, choices=range(10), default=0)
-parser.add_argument('--epochs', type=int, default=5)
+parser.add_argument('--epochs', type=int, default=75)
 parser.add_argument('--batchsize', type=int, default=32)
 parser.add_argument('--lr', type=float, default=1e-4)
 args = parser.parse_args()
@@ -28,16 +28,16 @@ from sklearn.model_selection import KFold
 import torch
 import mydataset, mymodels
 import os
-import wandb
+#import wandb
 
-wandb.init()
+#wandb.init()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 tr_ds = mydataset.MyDataset_MRI('train', mydataset.train_transforms, args.fold, args.MRI_type)
-tr = DataLoader(tr_ds, args.batchsize, True, pin_memory=True)
+tr = DataLoader(tr_ds, args.batchsize, True, pin_memory=True, num_workers=8)
 ts_ds = mydataset.MyDataset_MRI('test', mydataset.val_transforms, args.fold, args.MRI_type)
-ts = DataLoader(ts_ds, args.batchsize, pin_memory=True)
+ts = DataLoader(ts_ds, args.batchsize, pin_memory=True, num_workers=8)
 
 
 def test(val):
@@ -68,7 +68,7 @@ def train(tr, val, epochs=args.epochs, verbose=True):
         model.train()
         avg_acc = 0
         avg_loss = 0
-        for XX, Y in tqdm(tr):
+        for XX, Y in tr:
             XX = [X.to(device, torch.float) for X in XX]
             if args.MRI_type in ('flair','t1','t1ce', 't2'):
                 XX=XX[0]
@@ -92,7 +92,7 @@ def train(tr, val, epochs=args.epochs, verbose=True):
         scheduler.step(avg_loss)
         loss_tr.append(avg_loss.cpu().data.numpy())
         loss_tes.append(avg_lossv.cpu().data.numpy())
-        wandb.log({'train_accuracy': avg_acc.cpu().data.numpy(), 'train_loss': avg_loss.cpu().data.numpy(),'test_accuracy': avg_accv.cpu().data.numpy(),'test_loss': avg_lossv.cpu().data.numpy()})
+        #wandb.log({'train_accuracy': avg_acc.cpu().data.numpy(), 'train_loss': avg_loss.cpu().data.numpy(),'test_accuracy': avg_accv.cpu().data.numpy(),'test_loss': avg_lossv.cpu().data.numpy()})
     return loss_tr, loss_tes
         
 
@@ -139,8 +139,7 @@ plt.title(f'Loss plot - MRI exam: {args.MRI_type} - Fold: {args.fold}')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
-plt.savefig('plots\\'+str(prefix)+'.png')
-
+plt.savefig(os.path.join("plots",f"Loss_plot_for_MRI-{args.MRI_type}-Fold-{args.fold}.png"))
 
 
 def predict_metrics(data):
@@ -202,6 +201,9 @@ fpr = dict()
 tpr = dict()
 roc_auc = dict()
 lw=2
+
+fig = plt.figure(1)
+
 for i in range(n_classes):
     fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
     roc_auc[i] = metrics.auc(fpr[i], tpr[i])
@@ -218,4 +220,3 @@ plt.ylabel('True Positive Rate')
 plt.title(f'ROC curve for MRI: {args.MRI_type} - Fold: {args.fold}')
 plt.legend(loc="lower right")
 plt.savefig(os.path.join("plots",f"ROC_curve_for_MRI-{args.MRI_type}-Fold-{args.fold}.png"))
-plt.show()

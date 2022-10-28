@@ -1,0 +1,9 @@
+
+
+Model:architecture-resnext50_32x4d-method-UniMRI-MRI_type-t2-fold-1-epochs-75-batchsize-32-lr-0.0001 
+accuracy:0.5 
+mae:0.6578947368421053 
+f1:0.483937115516063 
+recall:0.5 
+precision:0.4789473684210526 
+auc:0.7051816239316239

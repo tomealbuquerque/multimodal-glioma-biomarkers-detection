@@ -1,6 +1,8 @@
 data_multimodal_tcga/Radiology/*
 data_multimodal_tcga/Pathology*
+data_multimodal_tcga/BraTS2021_Training_Data/*
 tmp_slides_debug/*
 weights/*
 wandb/*`
 MIL/checkpoint_best.pth
+/data_multimodal_tcga/Decathlon/

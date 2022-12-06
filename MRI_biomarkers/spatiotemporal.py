@@ -177,10 +177,10 @@ def train():
 
         # Computing metrics:
 
-    conf_mat = confusion_matrix(lbllist.cpu().numpy(), predlist.cpu().numpy())
-
+    cls = [0, 1, 2]
+    conf_mat = confusion_matrix(lbllist.cpu().numpy(), predlist.cpu().numpy(), labels=cls)
     print(conf_mat)
-    cls = ["0", "1", "2"]
+
     # Per-class accuracy
     class_accuracy = 100 * conf_mat.diagonal() / conf_mat.sum(1)
     print(class_accuracy)

@@ -85,7 +85,7 @@ for idx, pat in enumerate(df_clean['subject_id']):
                         'age': df_clean.loc[idx, 'age']})  #
 
     """
-    #create array of dictionares with target data per patient
+    #create array of dictionaries with target data per patient
     {
     'idh1' int,
     'ioh1p15q': int

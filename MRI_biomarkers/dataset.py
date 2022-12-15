@@ -23,7 +23,7 @@ class MRIDatasets:
                     label = int(row_df['IDH1_mut'].unique()[0] + row_df['loh1p/19q_cnv'].unique()[0])
                     imgs.append(torchio.Subject(t1=torchio.ScalarImage(img_path), label=label,))
 
-        return imgs[:5]
+        return imgs
 
 if __name__ == "__main__":
     from torch.utils.data import DataLoader

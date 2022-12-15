@@ -11,9 +11,9 @@ import argparse
 
 # TODOs: add full tcga dataset; generate a modified pickle file
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--name_file', type=str, default="modified_multimodal_glioma_data.pickle")
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--name_file', type=str, default="modified_multimodal_glioma_data.pickle")
+# args = parser.parse_args()
 
 K_folds_dataset = pd.read_pickle(r'multimodal_glioma_data.pickle')
 
@@ -112,6 +112,7 @@ for current_fold in K_folds_dataset:
     modiify_dictionaries(X_train)
     modiify_dictionaries(X_test)
 
-# pickle.dump(K_folds_dataset, open('modified_multimodal_glioma_data.pickle', 'wb'))
-pickle.dump(K_folds_dataset, open(args.name_file, 'wb'))
+pickle.dump(K_folds_dataset, open('modified_multimodal_glioma_data.pickle', 'wb'))
+# pickle.dump(K_folds_dataset, open(args.name_file, 'wb'))
+
 # # # np.save(ordner+'patches.npy', final_patches_arr)

@@ -22,7 +22,7 @@ class MRIDataset(Dataset):
     modality: str, options ['t1', 't1ce', 't2', 'flair', 't1_block', 't1ce_block', 't2_block', 'flair_block', 'all']
     """
     def __init__(self, type, transform, fold, modality):
-        self.base_ds_dir = 'data_multimodal_tcga'
+        self.base_ds_dir = os.path.join('deep-multimodal-glioma-prognosis', 'data_multimodal_tcga')
         pickle_file = os.path.join(self.base_ds_dir, r'modified_multimodal_glioma_data.pickle')
         self.X, self.Y = pickle.load(open(pickle_file, 'rb'))[fold][type]
         self.transform = transform
@@ -63,8 +63,8 @@ if __name__ == '__main__':
 
     train_dataloader = DataLoader(ds, batch_size=64, shuffle=True)
     train_features, train_labels = next(iter(train_dataloader))
-    print(f"Feature batch shape: {train_features.size()}")
-    print(f"Labels batch shape: {train_labels.size()}")
+    print(f"Feature batch shape: {len(train_features)}")
+    print(f"Labels batch shape: {len(train_labels)}")
     # import argparse
     # parser = argparse.ArgumentParser()
     # parser.add_argument('--type', choices=['train', 'test'],default='train')

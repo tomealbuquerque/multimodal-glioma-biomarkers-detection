@@ -6,3 +6,6 @@ weights/*
 wandb/*`
 MIL/checkpoint_best.pth
 /data_multimodal_tcga/Decathlon/
+data_multimodal_tcga/modified_multimodal_glioma_data.pickle
+.gitignore
+data_multimodal_tcga/tcga/*

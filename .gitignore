@@ -6,3 +6,8 @@ weights/*
 wandb/*`
 MIL/checkpoint_best.pth
 /data_multimodal_tcga/Decathlon/
+/data_multimodal_tcga/
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/deep-multimodal-glioma-prognosis.iml

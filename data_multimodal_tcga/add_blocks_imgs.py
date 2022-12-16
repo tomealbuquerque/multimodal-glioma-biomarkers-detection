@@ -44,7 +44,7 @@ def pad_to_shape(patch_size, img_arr):
                   constant_values=0.)
 
 
-def modiify_dictionaries(dictionaries):
+def modify_dictionaries(dictionaries):
     for original_dict in dictionaries:
         Patient_ID = original_dict[sequence_order[0]].split('\\')[1].lower()
         row = df[df['Patient'] == Patient_ID]
@@ -98,8 +98,18 @@ def modiify_dictionaries(dictionaries):
                             max(0, com_y - (ps // 2)):min(images_dict[sequence].shape[1], com_y + (ps // 2)),
                             max(0, com_z - (ps // 2)):min(images_dict[sequence].shape[2], com_z + (ps // 2))]
                 tmp_patch_lst.append(pad_to_shape(patch_size=ps, img_arr=tmp_patch))
-                original_dict[sequence + '_block'] = pad_to_shape(patch_size=ps, img_arr=tmp_patch)
+                if sequence == 't1c':
+                    sequence = 't1ce'
+                path_arr = r'{}'.format(original_dict[sequence]).split('\\')
+                block_base_path = os.path.join(path_arr[0], path_arr[1])
+                tmp_file_arr = path_arr[2].split('.')
+                tmp_file_arr[0] += '_block'
+                block_file_name = '.'.join(tmp_file_arr)
+                block_path = os.path.join(block_base_path, block_file_name)
+                np.save(block_path, pad_to_shape(patch_size=ps, img_arr=tmp_patch))
+                original_dict[sequence + '_block'] = block_path
             # print(row.Dataset.values[0] + "/" + row.Patient.values[0] + " done!")
+
 
 
 for current_fold in K_folds_dataset:
@@ -109,8 +119,8 @@ for current_fold in K_folds_dataset:
     original_ds_dirs = [train_sample[sequence_order[0]].split('\\')[1] for train_sample in X_train]
     blocks_dirs = [x for x in os.listdir(seg_folder) if x.upper() in original_ds_dirs]
 
-    modiify_dictionaries(X_train)
-    modiify_dictionaries(X_test)
+    modify_dictionaries(X_train)
+    modify_dictionaries(X_test)
 
 pickle.dump(K_folds_dataset, open('modified_multimodal_glioma_data.pickle', 'wb'))
 # pickle.dump(K_folds_dataset, open(args.name_file, 'wb'))

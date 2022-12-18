@@ -14,6 +14,7 @@ from torchio.transforms import (
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
+import pandas as pd
 from sklearn.metrics import confusion_matrix
 from dataset import MRIDatasets
 
@@ -37,7 +38,19 @@ class R2Plus1dStem4MRI(nn.Sequential):
             nn.ReLU(inplace=True))
 
 
-def train():
+class modifybasicstem(nn.Sequential):
+    """The default conv-batchnorm-relu stem
+    """
+
+    def __init__(self):
+        super(modifybasicstem, self).__init__(
+            nn.Conv3d(1, 64, kernel_size=(3, 7, 7), stride=(1, 2, 2),
+                      padding=(1, 3, 3), bias=False),
+            nn.BatchNorm3d(64),
+            nn.ReLU(inplace=True))
+
+
+def train(CNN='resnet2p1'):
     # Transforms
     rescale = RescaleIntensity((0.05, 99.5))
     randaffine = torchio.RandomAffine(scales=(0.9,1.2),degrees=10, isotropic=True, image_interpolation='nearest')
@@ -45,8 +58,8 @@ def train():
     transforms = [rescale, flip, randaffine]
 
     transform = Compose(transforms)
-    total_samples = MRIDatasets(dataset_path='../data_multimodal_tcga/Radiology',
-                          metadata_path='../data_multimodal_tcga/patient-info-tcga.csv').tcga()
+    total_samples = MRIDatasets(dataset_path='deep-multimodal-glioma-prognosis/data_multimodal_tcga/Radiology',
+                          metadata_path='deep-multimodal-glioma-prognosis/data_multimodal_tcga/patient-info-tcga.csv').tcga()
     subjects_dataset = torchio.SubjectsDataset(total_samples, transform=transform)
 
     # train/test split
@@ -58,6 +71,13 @@ def train():
 
     trainloader = DataLoader(dataset=trainset, batch_size=1, shuffle=True, num_workers=1)
     testloader = DataLoader(dataset=testset, batch_size=1, shuffle=True, num_workers=1)
+    
+    if CNN == 'resnet2p1':
+        model = torchvision.models.video.r2plus1d_18(weights='KINETICS400_V1')
+        model.stem = R2Plus1dStem4MRI()
+    elif CNN == 'resnet_mixed_conv':
+        model = torchvision.models.video.mc3_18(weights='KINETICS400_V1')
+        model.stem = modifybasicstem()
 
     model = torchvision.models.video.r2plus1d_18(pretrained=False)
     model.stem = R2Plus1dStem4MRI()
@@ -70,6 +90,17 @@ def train():
     # # print(model)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
+    
+    labels = []
+    for _, traindata in enumerate(trainloader):
+        labels.append(traindata['label'].item())
+
+    label_count = pd.Series(labels).value_counts()
+
+
+    # for dataset being unbalanced for classes [0, 1, 2]
+    class_weights = torch.FloatTensor([(1-(num/sum(label_count))) for num in label_count.tolist()])
+    class_weights = class_weights.to(device)
 
     # for dataset being unbalanced for classes [0, 1, 2]
     class_weights = torch.FloatTensor([1, 2.2, 4.1]).to(device)
@@ -83,7 +114,7 @@ def train():
 
     # # if load_model:
     # #     the_model = torch.load(Path(os.getcwd(), 'outputs'))
-    epochs = 2
+    epochs = 75
     for epoch in range(epochs):
 
         logs = {}
@@ -167,7 +198,7 @@ def train():
 
                 accuracy = correct / total
 
-            print('Test Accuracy of the model: {} %'.format(100 * correct / total))
+            print('Test Accuracy of the model: {:.2f} %'.format(100 * correct / total))
 
             logs['val_' + 'log loss'] = total_loss / total
             validationloss = total_loss / total
@@ -190,4 +221,4 @@ def train():
 
 
 if __name__ == "__main__":
-    train()
+    train(CNN='resnet2p1')

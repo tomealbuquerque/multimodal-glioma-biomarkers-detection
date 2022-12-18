@@ -25,34 +25,38 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 
 def main():
 
-    modality = 'flair_block'
+    modality = 't2_block'
+    reader = 'NumpyReader' if '_block' in modality else None
 
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96))])
 
     images, labels = get_images_labels(modality=modality, dataset_type='train')
-    train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader='NumpyReader')
+    train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
     train_loader = DataLoader(train_ds, batch_size=2, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
 
     images, labels = get_images_labels(modality=modality, dataset_type='test')
-    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader='NumpyReader')
+    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=2, num_workers=2, pin_memory=torch.cuda.is_available())
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
+    # model = monai.networks.nets.EfficientNetBN("efficientnet-b0", spatial_dims=3)
+    model = monai.networks.nets.ViT(in_channels=3, img_size=(96,96,96), pos_embed='conv', classification=True)
+    # model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
     # start a typical PyTorch training
+    max_epochs = 5
     val_interval = 2
     best_metric = -1
     epoch_loss_values = list()
     metric_values = list()
     writer = SummaryWriter()
-    for epoch in range(15):
+    for epoch in range(max_epochs):
         print("-" * 10)
-        print(f"epoch {epoch + 1}/{5}")
+        print(f"epoch {epoch + 1}/{max_epochs}")
         model.train()
         epoch_loss = 0
         step = 0
@@ -90,14 +94,28 @@ def main():
                     best_metric_epoch = epoch + 1
                     torch.save(model.state_dict(), "best_metric_model_classification3d_array.pth")
                     print("saved new best metric model")
-                print(
-                    "current epoch: {} current accuracy: {:.4f} best accuracy: {:.4f} at epoch {}".format(
-                        epoch + 1, metric, best_metric, best_metric_epoch
-                    )
-                )
+                print(f"current epoch: {epoch+1} current accuracy: {metric:.4f} "
+                      f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
                 writer.add_scalar("val_accuracy", metric, epoch + 1)
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     writer.close()
+
+    # plt.figure("train", (12, 6))
+    # plt.subplot(1, 2, 1)
+    # plt.title("Epoch Average Loss")
+    # x = [i + 1 for i in range(len(epoch_loss_values))]
+    # y = epoch_loss_values
+    # plt.xlabel("epoch")
+    # plt.plot(x, y)
+    # plt.subplot(1, 2, 2)
+    # plt.title("Val AUC")
+    # x = [val_interval * (i + 1) for i in range(len(metric_values))]
+    # y = metric_values
+    # plt.xlabel("epoch")
+    # plt.plot(x, y)
+
+    # plt.show()
+
 
 
 if __name__ == "__main__":

@@ -41,8 +41,8 @@ def main():
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model = monai.networks.nets.EfficientNetBN("efficientnet-b0", spatial_dims=3)
-    model = monai.networks.nets.ViT(in_channels=3, img_size=(96,96,96), pos_embed='conv', classification=True)
+    # model = monai.networks.nets.EfficientNetBN("efficientnet-b0", spatial_dims=3).to(device)
+    model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True).to(device)
     # model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)

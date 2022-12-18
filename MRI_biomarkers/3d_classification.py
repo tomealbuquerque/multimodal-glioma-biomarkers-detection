@@ -12,10 +12,12 @@ from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, 
 
 
 def get_images_labels(modality, fold=0, dataset_type='train'):
-    data_path = '../data_multimodal_tcga'
+    data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
     images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][dataset_type]
-
-    images = [os.path.join(data_path, f[modality].replace('\\', os.sep)) for f in images]
+    if '_block' in modality:        
+        images = [os.path.join(data_path, f[modality]+'.npy') for f in images]
+    else:
+        images = [os.path.join(data_path, f[modality].replace('\\', os.sep)) for f in images]
     labels = np.array([sum([label['idh1'], label['ioh1p15q']]) for label in labels], dtype=np.int64)
 
     return images, labels
@@ -23,21 +25,22 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 
 def main():
 
-    modality = 'flair'
+    modality = 'flair_block'
 
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96))])
 
-    images, labels = get_images_labels(modality=modality)
-    train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms)
+    images, labels = get_images_labels(modality=modality, dataset_type='train')
+    train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader='NumpyReader')
     train_loader = DataLoader(train_ds, batch_size=2, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
 
-    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms)
+    images, labels = get_images_labels(modality=modality, dataset_type='test')
+    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader='NumpyReader')
     val_loader = DataLoader(val_ds, batch_size=2, num_workers=2, pin_memory=torch.cuda.is_available())
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=2).to(device)
+    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
@@ -47,7 +50,7 @@ def main():
     epoch_loss_values = list()
     metric_values = list()
     writer = SummaryWriter()
-    for epoch in range(5):
+    for epoch in range(15):
         print("-" * 10)
         print(f"epoch {epoch + 1}/{5}")
         model.train()
@@ -99,3 +102,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # import nibabel as nib
+    # path = 'data_multimodal_tcga/Radiology/TCGA-08-0354/flair_block.nii.gz'
+    # print(nib.load(path))

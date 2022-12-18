@@ -7,13 +7,7 @@ import pandas as pd
 import nibabel as nib
 from scipy.ndimage import label, center_of_mass
 import pickle
-import argparse
 
-# TODOs: add full tcga dataset; generate a modified pickle file
-
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--name_file', type=str, default="modified_multimodal_glioma_data.pickle")
-# args = parser.parse_args()
 
 K_folds_dataset = pd.read_pickle(r'multimodal_glioma_data.pickle')
 
@@ -109,7 +103,6 @@ def modify_dictionaries(dictionaries):
                 np.save(block_path, pad_to_shape(patch_size=ps, img_arr=tmp_patch))
                 original_dict[sequence + '_block'] = block_path
             # print(row.Dataset.values[0] + "/" + row.Patient.values[0] + " done!")
-
 
 
 for current_fold in K_folds_dataset:

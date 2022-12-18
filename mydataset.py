@@ -6,10 +6,10 @@
 # =============================================================================
 """
 from __future__ import print_function, division
+
 from torch.utils.data import Dataset
 import torch
 import pandas as pd
-import pickle
 import nibabel as nib
 import os
 from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, ScaleIntensity
@@ -48,6 +48,7 @@ class MRIDataset(Dataset):
         self.images, self.labels = pd.read_pickle(os.path.join(self.base_dir, self.pickle_file))[self.fold][self.dataset_type]
 
     def __getitem__(self, i):
+
         mods = [self.modality]
         if self.modality == 'all':
             mods = ['flair', 'flair_block',
@@ -61,10 +62,8 @@ class MRIDataset(Dataset):
             img = nib.load(os.path.join(self.base_dir, img_path)).get_fdata()
             if self.transform:
                 img = self.transform(img)
-            image.append(torch.moveaxis(img[0], 2, 0))
-
-        # encoding target from ([0, 0], [0, 1], [1, 1]) to (0, 1, 2)
-        label = sum([self.labels[i]['idh1'], self.labels[i]['ioh1p15q']])
+            img = torch.from_numpy(img).permute(2, 0, 1)
+            image.append(img)
 
         return image, label
 
@@ -73,26 +72,20 @@ class MRIDataset(Dataset):
 
 
 if __name__ == '__main__':
-    from torch.utils.data import DataLoader
+    import monai
+    from monai.data import ImageDataset, DataLoader
+    import numpy as np
+    ds = MRIDataset(fold=0, modality='flair', dataset_type='train')
+    data_path = 'data_multimodal_tcga'
+    images = [os.path.join(data_path, f['flair'].replace('\\', os.sep)) for f in ds.images]
+    labels = np.array([sum([label['idh1'], label['ioh1p15q']]) for label in ds.labels], dtype=np.int64)
+
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), RandRotate90()])
-    test_transforms = Compose([ScaleIntensity(), EnsureChannelFirst()])
 
-    ds = MRIDataset(fold=0, modality='flair', dataset_type='train', transform=train_transforms)
-    print(ds.__len__())
+    # check_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms)
+    # check_loader = DataLoader(check_ds, batch_size=2, num_workers=2, pin_memory=torch.cuda.is_available())
+    # im, label = monai.utils.misc.first(check_loader)
+    # print(type(im), im.shape, label)
 
-    ds1 = MRIDataset(fold=0, modality='flair', dataset_type='test', transform=test_transforms)
-    train_dataloader = DataLoader(ds, batch_size=64, shuffle=True)
-    test_dataloader = DataLoader(ds1, batch_size=2, shuffle=True)
-    train_features, train_labels = next(iter(train_dataloader))
-    print(f"Feature batch shape: {train_features.size()}")
-    print(f"Labels batch shape: {train_labels.size()}")
-    # import argparse
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--type', choices=['train', 'test'],default='train')
-    # args = parser.parse_args()
-
-    # import matplotlib.pyplot as plt
-    # ds = MyDataset_MRI(args.type, train_transforms, 0)
-    # X, Y = ds[0]
-    # print('X:', X.min(), X.max(), X.shape, X.dtype)
-
+    train_ds = ImageDataset(image_files=images[:10], labels=labels[:10], transform=train_transforms)
+    train_loader = DataLoader(train_ds, batch_size=2, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())

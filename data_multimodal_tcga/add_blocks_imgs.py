@@ -99,7 +99,7 @@ def modify_dictionaries(dictionaries):
                 tmp_file_arr = path_arr[2].split('.')
                 tmp_file_arr[0] += '_block'
                 block_file_name = '.'.join(tmp_file_arr)
-                block_path = os.path.join(block_base_path, block_file_name)
+                block_path = os.path.join(block_base_path, block_file_name + '.npy')
                 np.save(block_path, pad_to_shape(patch_size=ps, img_arr=tmp_patch))
                 original_dict[sequence + '_block'] = block_path
             # print(row.Dataset.values[0] + "/" + row.Patient.values[0] + " done!")

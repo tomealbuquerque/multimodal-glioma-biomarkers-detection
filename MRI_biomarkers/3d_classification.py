@@ -12,27 +12,30 @@ from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, 
 
 
 def get_images_labels(modality, fold=0, dataset_type='train'):
-    data_path = '../data_multimodal_tcga'
+    data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
     images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][dataset_type]
-
-    images = [os.path.join(data_path, f[modality].replace('\\', os.sep)) for f in images]
+    if '_block' in modality:
+        images = [os.path.join(data_path, f[modality]) for f in images]
+    else:
+        images = [os.path.join(data_path, f[modality].replace('\\', os.sep)) for f in images]
     labels = np.array([sum([label['idh1'], label['ioh1p15q']]) for label in labels], dtype=np.int64)
-
+    print(images)
     return images, labels
 
 
 def main():
 
     modality = 'flair'
-
+    reader = 'NumpyReader' if '_block' in modality else None
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96))])
 
-    images, labels = get_images_labels(modality=modality)
-    train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms)
+    images, labels = get_images_labels(modality=modality, dataset_type='train')
+    train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
     train_loader = DataLoader(train_ds, batch_size=2, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
 
-    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms)
+    images, labels = get_images_labels(modality=modality, dataset_type='test')
+    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=2, num_workers=2, pin_memory=torch.cuda.is_available())
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer

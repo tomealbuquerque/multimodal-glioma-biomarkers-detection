@@ -11,3 +11,4 @@ MIL/checkpoint_best.pth
 /.idea/modules.xml
 /.idea/vcs.xml
 /.idea/deep-multimodal-glioma-prognosis.iml
+MRI_biomarkers/__pycache__

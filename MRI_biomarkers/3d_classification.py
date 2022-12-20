@@ -42,13 +42,13 @@ def main():
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # model = monai.networks.nets.EfficientNetBN("efficientnet-b0", spatial_dims=3).to(device)
-    model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True).to(device)
+    model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3).to(device)
     # model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
     # start a typical PyTorch training
-    max_epochs = 5
+    max_epochs = 75
     val_interval = 2
     best_metric = -1
     epoch_loss_values = list()
@@ -65,7 +65,7 @@ def main():
             inputs, labels = batch_data[0].to(device), batch_data[1].to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = loss_function(outputs, labels)
+            loss = loss_function(outputs[0], labels)
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
@@ -84,7 +84,7 @@ def main():
                 for val_data in val_loader:
                     val_images, val_labels = val_data[0].to(device), val_data[1].to(device)
                     val_outputs = model(val_images)
-                    value = torch.eq(val_outputs.argmax(dim=1), val_labels)
+                    value = torch.eq(val_outputs[0].argmax(dim=1), val_labels)
                     metric_count += len(value)
                     num_correct += value.sum().item()
                 metric = num_correct / metric_count
@@ -100,7 +100,7 @@ def main():
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     writer.close()
 
-    # plt.figure("train", (12, 6))
+    # fig = plt.figure("train", (12, 6))
     # plt.subplot(1, 2, 1)
     # plt.title("Epoch Average Loss")
     # x = [i + 1 for i in range(len(epoch_loss_values))]
@@ -112,7 +112,7 @@ def main():
     # x = [val_interval * (i + 1) for i in range(len(metric_values))]
     # y = metric_values
     # plt.xlabel("epoch")
-    # plt.plot(x, y)
+    # plt.savefig(f'DenseNet121_epochs_{max_epochs}.png')
 
     # plt.show()
 

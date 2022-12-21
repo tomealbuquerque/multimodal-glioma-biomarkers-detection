@@ -18,8 +18,7 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
     data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
     images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][dataset_type]
 
-    ims = []
-    lbs = []
+    ims, lbs = [], []
 
     for mod in modality:
         if '_block' in mod:        
@@ -175,6 +174,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # import nibabel as nib
-    # path = 'data_multimodal_tcga/Radiology/TCGA-08-0354/flair_block.nii.gz'
-    # print(nib.load(path))

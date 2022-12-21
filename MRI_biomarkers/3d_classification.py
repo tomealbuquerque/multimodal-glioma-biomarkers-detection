@@ -139,7 +139,7 @@ def main():
             test_outputs = model(test_images).argmax(dim=1)
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
-                y_pred.append(pred[i].item())
+                y_pred.append(test_outputs[i].item())
     
     print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
     msg = f"""

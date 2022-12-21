@@ -1,5 +1,3 @@
-# %%
-
 import os
 import torch
 import numpy as np
@@ -14,3 +12,5 @@ from monai.config import print_config
 from monai.utils import set_determinism
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
+
+print(monai.print_config())

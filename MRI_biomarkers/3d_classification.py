@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 
 def get_images_labels(modality, fold=0, dataset_type='train'):
     data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
-    images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][dataset_type]
+    images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][
+        dataset_type]
 
     ims, lbs = [], []
 
@@ -24,7 +25,7 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
             ims += [os.path.join(data_path, f[mod]) for f in images]
         else:
             ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
-        
+
         lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
 
     return ims, np.array(lbs, dtype=np.int64)
@@ -42,7 +43,8 @@ def main():
 
     images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
     train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2,
+                              pin_memory=torch.cuda.is_available())
 
     images, labels = get_images_labels(modality=modality, dataset_type='test', fold=fold)
     val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
@@ -56,10 +58,14 @@ def main():
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
-    trial_name = '_'.join([model.__str__().split('(')[0], 'epoch' + str(max_epochs), '_'.join(modality), 'fold'+str(fold), pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
-    trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results", f"trial_{trial_name}")
+    trial_name = '_'.join(
+        [model.__str__().split('(')[0], 'epoch' + str(max_epochs), '_'.join(modality), 'fold' + str(fold),
+         pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
+    trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
+                              f"trial_{trial_name}")
 
-    os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"), exist_ok=True)
+    os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"),
+                exist_ok=True)
     os.makedirs(trial_path, exist_ok=True)
 
     f = open('records.txt', 'a+')
@@ -112,22 +118,23 @@ def main():
                 if metric > best_metric:
                     best_metric = metric
                     best_metric_epoch = epoch + 1
-                    torch.save(model.state_dict(), os.path.join(trial_path,"best_metric_model_classification3d_array.pth"))
+                    torch.save(model.state_dict(),
+                               os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
                     print("saved new best metric model")
-                print(f"current epoch: {epoch+1} current accuracy: {metric:.4f} "
+                print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
                       f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
-                f.write(f"current epoch: {epoch+1} current accuracy: {metric:.4f}\n"
-                      f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
+                f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
+                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
                 # writer.add_scalar("val_accuracy", metric, epoch + 1)
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
     # writer.close()
 
-
     # Evaluate
-    test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
+    test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2,
+                                 pin_memory=torch.cuda.is_available())
 
-    model.load_state_dict(torch.load(os.path.join(trial_path,"best_metric_model_classification3d_array.pth")))
+    model.load_state_dict(torch.load(os.path.join(trial_path, "best_metric_model_classification3d_array.pth")))
     model.eval()
 
     y_true = []
@@ -170,7 +177,6 @@ def main():
     y = metric_values
     plt.xlabel("epoch")
     plt.savefig('loss_auc.png')
-
 
 if __name__ == "__main__":
     main()

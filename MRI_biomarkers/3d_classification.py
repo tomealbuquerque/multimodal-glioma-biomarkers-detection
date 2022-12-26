@@ -8,9 +8,8 @@ import torch
 import monai
 from monai.data import ImageDataset, DataLoader
 from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, ScaleIntensity
-from monai.metrics import compute_roc_auc, 
 
-from sklearn.metrics import classification_report, mean_absolute_error, roc_auc_score
+from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, roc_auc_score
 import matplotlib.pyplot as plt
 
 

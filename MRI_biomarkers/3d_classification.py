@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
 import monai
 from monai.data import ImageDataset, DataLoader
@@ -21,7 +21,7 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 
     for mod in modality:
         if '_block' in mod:        
-            ims += [os.path.join(data_path, f[mod]+'.npy') for f in images]
+            ims += [os.path.join(data_path, f[mod]) for f in images]
         else:
             ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
         
@@ -31,12 +31,11 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 
 
 def main():
-
     modality = ['t2_block', 't1_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
     batch_size = 32
-    max_epochs = 2
+    max_epochs = 20
 
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96))])
@@ -51,9 +50,9 @@ def main():
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3).to(device)
+    # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3).to(device)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3).to(device)
-    # model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
+    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
@@ -63,14 +62,14 @@ def main():
     os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"), exist_ok=True)
     os.makedirs(trial_path, exist_ok=True)
 
-    f = open(os.path.join(trial_path, str(trial_name)+'.txt'), 'a+')
+    f = open('records.txt', 'a+')
 
     # start a typical PyTorch training
     val_interval = 2
     best_metric = -1
     epoch_loss_values = []
     metric_values = []
-    writer = SummaryWriter()
+    # writer = SummaryWriter()
     for epoch in range(max_epochs):
         print("-" * 10)
         print(f"epoch {epoch + 1}/{max_epochs}")
@@ -90,8 +89,8 @@ def main():
             epoch_loss += loss.item()
             epoch_len = len(train_ds) // train_loader.batch_size
             print(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
-            f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
-            writer.add_scalar("train_loss", loss.item(), epoch_len * epoch + step)
+            f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}\n")
+            # writer.add_scalar("train_loss", loss.item(), epoch_len * epoch + step)
         epoch_loss /= step
         epoch_loss_values.append(epoch_loss)
         print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
@@ -117,12 +116,12 @@ def main():
                     print("saved new best metric model")
                 print(f"current epoch: {epoch+1} current accuracy: {metric:.4f} "
                       f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
-                f.write(f"current epoch: {epoch+1} current accuracy: {metric:.4f} "
+                f.write(f"current epoch: {epoch+1} current accuracy: {metric:.4f}\n"
                       f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
-                writer.add_scalar("val_accuracy", metric, epoch + 1)
+                # writer.add_scalar("val_accuracy", metric, epoch + 1)
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
-    writer.close()
+    # writer.close()
 
 
     # Evaluate
@@ -141,7 +140,10 @@ def main():
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
     
-    print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
+    print(f'y_true: {y_true}')
+    print(f'y+pred: {y_pred}')
+    
+    # print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
     msg = f"""
     Model: {model.__str__().split('(')[0]}
     batch size: {batch_size}
@@ -151,7 +153,7 @@ def main():
     Metrics: 
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
     """
-
+    
     f.write(msg)
     f.close()
 
@@ -167,8 +169,7 @@ def main():
     x = [val_interval * (i + 1) for i in range(len(metric_values))]
     y = metric_values
     plt.xlabel("epoch")
-    plt.savefig(os.path.join(trial_path, f'{trial_name}.png'))
-
+    plt.savefig('loss_auc.png')
 
 
 if __name__ == "__main__":

@@ -1,14 +1,10 @@
 import os
-
 import pandas as pd
 import numpy as np
 import torch
-# from torch.utils.tensorboard import SummaryWriter
-
 import monai
 from monai.data import ImageDataset, DataLoader
 from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, ScaleIntensity
-
 from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, roc_auc_score
 import matplotlib.pyplot as plt
 
@@ -21,7 +17,7 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
     ims, lbs = [], []
 
     for mod in modality:
-        if '_block' in mod:        
+        if '_block' in mod:
             ims += [os.path.join(data_path, f[mod]) for f in images]
         else:
             ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
@@ -68,14 +64,13 @@ def main():
                 exist_ok=True)
     os.makedirs(trial_path, exist_ok=True)
 
-    f = open(os.path.join(trial_path, 'records.txt', 'a+'))
+    f = open(os.path.join(trial_path, 'records.txt'), 'a+')
 
     # start a typical PyTorch training
     val_interval = 2
     best_metric = -1
     epoch_loss_values = []
     metric_values = []
-    # writer = SummaryWriter()
     for epoch in range(max_epochs):
         print("-" * 10)
         print(f"epoch {epoch + 1}/{max_epochs}")
@@ -125,10 +120,8 @@ def main():
                       f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
                 f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
                         f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
-                # writer.add_scalar("val_accuracy", metric, epoch + 1)
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
-    # writer.close()
 
     # Evaluate
     test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2,
@@ -146,7 +139,7 @@ def main():
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
-    
+
     print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
 
     msg = f"""
@@ -161,7 +154,7 @@ def main():
     auc: {roc_auc_score(y_true, y_pred)}
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
     """
-    
+
     f.write(msg)
     f.close()
 
@@ -179,6 +172,7 @@ def main():
     plt.plot(x, y)
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
+
 
 if __name__ == "__main__":
     main()

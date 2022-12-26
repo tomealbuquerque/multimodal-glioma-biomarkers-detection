@@ -32,7 +32,7 @@ def main():
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
     batch_size = 32
-    max_epochs = 20
+    max_epochs = 3
 
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96))])
@@ -67,9 +67,9 @@ def main():
     f = open(os.path.join(trial_path, 'records.txt'), 'a+')
 
     # start a typical PyTorch training
-    val_interval = 2
     best_metric = -1
     epoch_loss_values = []
+    loss_tes=[]
     metric_values = []
     for epoch in range(max_epochs):
         print("-" * 10)
@@ -97,29 +97,32 @@ def main():
         print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
         f.write(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}\n")
 
-        if (epoch + 1) % val_interval == 0:
-            model.eval()
-            with torch.no_grad():
-                num_correct = 0.0
-                metric_count = 0
-                for val_data in val_loader:
-                    val_images, val_labels = val_data[0].to(device), val_data[1].to(device)
-                    val_outputs = model(val_images)
-                    value = torch.eq(val_outputs.argmax(dim=1), val_labels)
-                    metric_count += len(value)
-                    num_correct += value.sum().item()
-                metric = num_correct / metric_count
-                metric_values.append(metric)
-                if metric > best_metric:
-                    best_metric = metric
-                    best_metric_epoch = epoch + 1
-                    torch.save(model.state_dict(),
-                               os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
-                    print("saved new best metric model")
-                print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
-                      f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
-                f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
-                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
+        model.eval()
+        with torch.no_grad():
+            num_correct = 0.0
+            metric_count = 0
+            val_avg_loss = 0
+            for val_data in val_loader:
+                val_images, val_labels = val_data[0].to(device), val_data[1].to(device)
+                val_outputs = model(val_images)
+                val_loss = loss_function(val_outputs, val_labels)
+                value = torch.eq(val_outputs.argmax(dim=1), val_labels)
+                metric_count += len(value)
+                num_correct += value.sum().item()
+                val_avg_loss += val_loss.item() / len(val_loader)
+            loss_tes.append(val_avg_loss)
+            metric = num_correct / metric_count
+            metric_values.append(metric)
+            if metric > best_metric:
+                best_metric = metric
+                best_metric_epoch = epoch + 1
+                torch.save(model.state_dict(),
+                            os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
+                print("saved new best metric model")
+            print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
+                    f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
+            f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
+                    f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
 
@@ -151,9 +154,12 @@ def main():
     Metrics: 
     accuracy: {accuracy_score(y_true, y_pred)}
     mae: {mean_absolute_error(y_true, y_pred)}
-    auc: {roc_auc_score(y_true, y_pred)}
+    
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
     """
+    # auc: {roc_auc_score(y_true, y_pred, multi_class='ovr')}
+    print(y_true)
+    print(y_pred)
 
     f.write(msg)
     f.close()
@@ -161,15 +167,15 @@ def main():
     fig = plt.figure("train", (12, 6))
     plt.subplot(1, 2, 1)
     plt.title("Epoch Average Loss")
-    x = [i + 1 for i in range(len(epoch_loss_values))]
-    y = epoch_loss_values
+    plt.xticks(range(1, len(epoch_loss_values)))
     plt.xlabel("epoch")
-    plt.plot(x, y)
+    plt.plot(epoch_loss_values)
+    plt.plot(loss_tes)
+    plt.legend(['train', 'test'], loc='upper left')
     plt.subplot(1, 2, 2)
     plt.title("Val AUC")
-    x = [val_interval * (i + 1) for i in range(len(metric_values))]
-    y = metric_values
-    plt.plot(x, y)
+    plt.plot(metric_values)
+    plt.xticks(range(1, len(metric_values)))
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
 

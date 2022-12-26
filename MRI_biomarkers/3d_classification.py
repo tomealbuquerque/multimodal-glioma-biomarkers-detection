@@ -8,8 +8,9 @@ import torch
 import monai
 from monai.data import ImageDataset, DataLoader
 from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, ScaleIntensity
+from monai.metrics import compute_roc_auc, 
 
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, mean_absolute_error, roc_auc_score
 import matplotlib.pyplot as plt
 
 
@@ -68,7 +69,7 @@ def main():
                 exist_ok=True)
     os.makedirs(trial_path, exist_ok=True)
 
-    f = open('records.txt', 'a+')
+    f = open(os.path.join(trial_path, 'records.txt', 'a+'))
 
     # start a typical PyTorch training
     val_interval = 2
@@ -147,10 +148,8 @@ def main():
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
     
-    print(f'y_true: {y_true}')
-    print(f'y+pred: {y_pred}')
-    
-    # print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
+    print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
+
     msg = f"""
     Model: {model.__str__().split('(')[0]}
     batch size: {batch_size}
@@ -158,6 +157,9 @@ def main():
     evaluates on {len(val_ds)} images from test set.
 
     Metrics: 
+    accuracy: {accuracy_score(y_true, y_pred)}
+    mae: {mean_absolute_error(y_true, y_pred)}
+    auc: {roc_auc_score(y_true, y_pred)}
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
     """
     
@@ -175,8 +177,9 @@ def main():
     plt.title("Val AUC")
     x = [val_interval * (i + 1) for i in range(len(metric_values))]
     y = metric_values
+    plt.plot(x, y)
     plt.xlabel("epoch")
-    plt.savefig('loss_auc.png')
+    plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
 
 if __name__ == "__main__":
     main()

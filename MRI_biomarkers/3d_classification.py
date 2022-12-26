@@ -15,23 +15,23 @@ import matplotlib.pyplot as plt
 
 def get_images_labels(modality, fold=0, dataset_type='train'):
     data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
-    images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][dataset_type]
+    images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][
+        dataset_type]
 
     ims, lbs = [], []
 
     for mod in modality:
-        if '_block' in mod:        
-            ims += [os.path.join(data_path, f[mod]+'.npy') for f in images]
+        if '_block' in mod:
+            ims += [os.path.join(data_path, f[mod]) for f in images]
         else:
             ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
-        
+
         lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
 
     return ims, np.array(lbs, dtype=np.int64)
 
 
 def main():
-
     modality = ['t2_block', 't1_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
@@ -43,7 +43,8 @@ def main():
 
     images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
     train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2,
+                              pin_memory=torch.cuda.is_available())
 
     images, labels = get_images_labels(modality=modality, dataset_type='test', fold=fold)
     val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
@@ -51,19 +52,23 @@ def main():
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3).to(device)
+    # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3).to(device)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3).to(device)
-    # model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
+    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
-    trial_name = '_'.join([model.__str__().split('(')[0], 'epoch' + str(max_epochs), '_'.join(modality), 'fold'+str(fold), pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
-    trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results", f"trial_{trial_name}")
+    trial_name = '_'.join(
+        [model.__str__().split('(')[0], 'epoch' + str(max_epochs), '_'.join(modality), 'fold' + str(fold),
+         pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
+    trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
+                              f"trial_{trial_name}")
 
-    os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"), exist_ok=True)
+    os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"),
+                exist_ok=True)
     os.makedirs(trial_path, exist_ok=True)
 
-    f = open(os.path.join(trial_path, str(trial_name)+'.txt'), 'a+')
+    f = open(os.path.join(trial_path, str(trial_name) + '.txt'), 'a+')
 
     # start a typical PyTorch training
     val_interval = 2
@@ -113,22 +118,23 @@ def main():
                 if metric > best_metric:
                     best_metric = metric
                     best_metric_epoch = epoch + 1
-                    torch.save(model.state_dict(), os.path.join(trial_path,"best_metric_model_classification3d_array.pth"))
+                    torch.save(model.state_dict(),
+                               os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
                     print("saved new best metric model")
-                print(f"current epoch: {epoch+1} current accuracy: {metric:.4f} "
+                print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
                       f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
-                f.write(f"current epoch: {epoch+1} current accuracy: {metric:.4f} "
-                      f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
+                f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
+                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
                 writer.add_scalar("val_accuracy", metric, epoch + 1)
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
     writer.close()
 
-
     # Evaluate
-    test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
+    test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2,
+                                 pin_memory=torch.cuda.is_available())
 
-    model.load_state_dict(torch.load(os.path.join(trial_path,"best_metric_model_classification3d_array.pth")))
+    model.load_state_dict(torch.load(os.path.join(trial_path, "best_metric_model_classification3d_array.pth")))
     model.eval()
 
     y_true = []
@@ -140,7 +146,7 @@ def main():
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
-    
+
     print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
     msg = f"""
     Model: {model.__str__().split('(')[0]}
@@ -168,7 +174,6 @@ def main():
     y = metric_values
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, f'{trial_name}.png'))
-
 
 
 if __name__ == "__main__":

@@ -28,14 +28,21 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 
 
 def main():
-    modality = ['t2_block', 't1_block']
+    resize_ps = 96
+
+    modality = ['t1ce_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
     batch_size = 32
-    max_epochs = 3
+    max_epochs = 100
 
-    train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96)), RandRotate90()])
-    val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((96, 96, 96))])
+    # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3)
+    # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3)
+    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3)
+    
+
+    train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
+    val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
 
     images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
     train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
@@ -48,15 +55,11 @@ def main():
 
     # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3).to(device)
-    # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3).to(device)
-    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3).to(device)
+    model = model.to(device)
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), 1e-5)
 
-    trial_name = '_'.join(
-        [model.__str__().split('(')[0], 'epoch' + str(max_epochs), '_'.join(modality), 'fold' + str(fold),
-         pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
+    trial_name = '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
     trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
                               f"trial_{trial_name}")
 
@@ -148,7 +151,10 @@ def main():
     msg = f"""
     Model: {model.__str__().split('(')[0]}
     batch size: {batch_size}
-    epochs: {epoch}
+    epochs: {max_epochs}
+    fold: {fold}
+    modality used: {modality}
+    trained on {len(train_ds)} images
     evaluates on {len(val_ds)} images from test set.
 
     Metrics: 
@@ -158,8 +164,8 @@ def main():
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
     """
     # auc: {roc_auc_score(y_true, y_pred, multi_class='ovr')}
-    print(y_true)
-    print(y_pred)
+    # print(y_true)
+    # print(y_pred)
 
     f.write(msg)
     f.close()
@@ -167,15 +173,20 @@ def main():
     fig = plt.figure("train", (12, 6))
     plt.subplot(1, 2, 1)
     plt.title("Epoch Average Loss")
-    plt.xticks(range(1, len(epoch_loss_values)))
+    x = [i + 1 for i in range(len(epoch_loss_values))]
+    y = epoch_loss_values
+    # print(len(x), len(y))
     plt.xlabel("epoch")
-    plt.plot(epoch_loss_values)
+    plt.plot(x, y)
     plt.plot(loss_tes)
+    # print(len(loss_tes))
     plt.legend(['train', 'test'], loc='upper left')
     plt.subplot(1, 2, 2)
     plt.title("Val AUC")
-    plt.plot(metric_values)
-    plt.xticks(range(1, len(metric_values)))
+    x = [(i + 1) for i in range(len(metric_values))]
+    y = metric_values
+    # print(len(x), len(y))
+    plt.plot(x, y)
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
 

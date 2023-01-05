@@ -5,7 +5,7 @@ import torch
 import monai
 from monai.data import ImageDataset, DataLoader
 from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, ScaleIntensity
-from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, roc_auc_score
+from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
 
@@ -30,14 +30,15 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 def main():
     resize_ps = 96
 
-    modality = ['t1ce_block']
+    modality = ['t1ce_block', 'flair_block', 't2_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
-    batch_size = 32
-    max_epochs = 100
+    batch_size = 16
+    max_epochs = 200
+    lr = 1e-4
 
-    # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", pretrained=True, spatial_dims=3, in_channels=1, num_classes=3)
-    # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3)
+    # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=3)
+    # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=3, post_activation='x')
     model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3)
     
 
@@ -53,11 +54,10 @@ def main():
     val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=2, pin_memory=torch.cuda.is_available())
 
-    # Create DenseNet121, CrossEntropyLoss and Adam optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     loss_function = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), 1e-5)
+    optimizer = torch.optim.Adam(model.parameters(), lr)
 
     trial_name = '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
     trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
@@ -88,13 +88,13 @@ def main():
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_function(outputs, labels)
+            # loss = loss_function(outputs[0], labels) # ViT
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
             epoch_len = len(train_ds) // train_loader.batch_size
             print(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
             f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}\n")
-            # writer.add_scalar("train_loss", loss.item(), epoch_len * epoch + step)
         epoch_loss /= step
         epoch_loss_values.append(epoch_loss)
         print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
@@ -108,6 +108,7 @@ def main():
             for val_data in val_loader:
                 val_images, val_labels = val_data[0].to(device), val_data[1].to(device)
                 val_outputs = model(val_images)
+                # val_outputs = model(val_images)[0] # ViT
                 val_loss = loss_function(val_outputs, val_labels)
                 value = torch.eq(val_outputs.argmax(dim=1), val_labels)
                 metric_count += len(value)
@@ -129,7 +130,7 @@ def main():
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
 
-    # Evaluate
+    # # Evaluate
     test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2,
                                  pin_memory=torch.cuda.is_available())
 
@@ -138,10 +139,12 @@ def main():
 
     y_true = []
     y_pred = []
+    
     with torch.no_grad():
         for test_data in test_dataloader:
             test_images, test_labels = test_data[0].to(device), test_data[1].to(device)
             test_outputs = model(test_images).argmax(dim=1)
+            # test_outputs = model(test_images)[0].argmax(dim=1) # ViT
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
@@ -156,12 +159,13 @@ def main():
     modality used: {modality}
     trained on {len(train_ds)} images
     evaluates on {len(val_ds)} images from test set.
-
     Metrics: 
     accuracy: {accuracy_score(y_true, y_pred)}
     mae: {mean_absolute_error(y_true, y_pred)}
     
+    Classfication report:
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
+
     """
     # auc: {roc_auc_score(y_true, y_pred, multi_class='ovr')}
     # print(y_true)
@@ -189,6 +193,13 @@ def main():
     plt.plot(x, y)
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
+
+    cm = confusion_matrix(y_true, y_pred, labels=['0', '1', '2'])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['0', '1', '2'])
+    disp.plot()
+    plt.savefig(os.path.join(trial_path, 'confusion_matrix.png'))
+
+    print('Finished!')
 
 
 if __name__ == "__main__":

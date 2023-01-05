@@ -31,17 +31,17 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 def main():
     resize_ps = 96
 
-    modality = ['t2_block']
+    modality = ['flair_block', 't2_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
     batch_size = 16
     max_epochs = 100
-    lower_lr = 1e-5
+    lower_lr = 5e-5
     num_classes = 3
 
     # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=num_classes)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=num_classes, post_activation='x')
-    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=3, dropout_prob=0.2)
+    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=num_classes, dropout_prob=0.2)
     
 
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
@@ -56,7 +56,7 @@ def main():
     val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=2, pin_memory=torch.cuda.is_available())
 
-    print(f'Train data with {len(train_loader)} images loaded; val data with {len(val_loader)} images loaded!')
+    print(f'Train data with {len(train_ds)} images loaded; val data with {len(val_ds)} images loaded!')
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -67,7 +67,7 @@ def main():
     steepest_lr, _ = lr_finder.get_steepest_gradient()
     
     print(f'Find the steepest learning rate {steepest_lr}')
-    
+
     optimizer = torch.optim.Adam(model.parameters(), round(steepest_lr, 5))
 
     trial_name = '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
@@ -207,8 +207,8 @@ def main():
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
 
-    cm = confusion_matrix(y_true, y_pred, labels=['0', '1', '2'])
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['0', '1', '2'])
+    cm = confusion_matrix(y_true, y_pred, labels=[0, 1, 2])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1, 2])
     disp.plot()
     plt.savefig(os.path.join(trial_path, 'confusion_matrix.png'))
 

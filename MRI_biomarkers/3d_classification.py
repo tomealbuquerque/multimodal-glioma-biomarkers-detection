@@ -1,4 +1,5 @@
 import os
+import random
 import pandas as pd
 import numpy as np
 import torch
@@ -28,10 +29,10 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
     return ims, np.array(lbs, dtype=np.int64)
 
 
-def main():
+def main(modality, verbose=False):
     resize_ps = 96
 
-    modality = ['flair_block', 't2_block']
+    # modality = ['flair_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     fold = 0
     batch_size = 16
@@ -56,7 +57,8 @@ def main():
     val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=2, pin_memory=torch.cuda.is_available())
 
-    print(f'Train data with {len(train_ds)} images loaded; val data with {len(val_ds)} images loaded!')
+    if verbose:
+        print(f'Train data with {len(train_ds)} images loaded; val data with {len(val_ds)} images loaded!')
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -66,7 +68,8 @@ def main():
     lr_finder.range_test(train_loader, val_loader, end_lr=1e-0, num_iter=20)
     steepest_lr, _ = lr_finder.get_steepest_gradient()
     
-    print(f'Find the steepest learning rate {steepest_lr}')
+    if verbose:
+        print(f'Find the steepest learning rate {steepest_lr}')
 
     optimizer = torch.optim.Adam(model.parameters(), round(steepest_lr, 5))
 
@@ -86,10 +89,11 @@ def main():
     loss_tes=[]
     metric_values = []
     for epoch in range(max_epochs):
-        print("-" * 10)
-        print(f"epoch {epoch + 1}/{max_epochs}")
-        f.write("-" * 10 + '\n')
-        f.write(f"epoch {epoch + 1}/{max_epochs}\n")
+        if verbose:
+            print("-" * 10)
+            print(f"epoch {epoch + 1}/{max_epochs}")
+            f.write("-" * 10 + '\n')
+            f.write(f"epoch {epoch + 1}/{max_epochs}\n")
         model.train()
         epoch_loss = 0
         step = 0
@@ -104,12 +108,14 @@ def main():
             optimizer.step()
             epoch_loss += loss.item()
             epoch_len = len(train_ds) // train_loader.batch_size
-            print(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
-            f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}\n")
+            if verbose:
+                print(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
+                f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}\n")
         epoch_loss /= step
         epoch_loss_values.append(epoch_loss)
-        print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
-        f.write(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}\n")
+        if verbose:
+            print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
+            f.write(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}\n")
 
         model.eval()
         with torch.no_grad():
@@ -134,15 +140,18 @@ def main():
                 torch.save(model.state_dict(),
                             os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
                 print("saved new best metric model")
-            print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
-                    f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
-            f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
-                    f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
+            if verbose:
+                print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
+                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
+                f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
+                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
 
     # # Evaluate
-    test_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, num_workers=2,
+    images, labels = get_images_labels(modality=[random.choice(modality)], dataset_type='test', fold=fold)
+    test_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
+    test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2,
                                  pin_memory=torch.cuda.is_available())
 
     model.load_state_dict(torch.load(os.path.join(trial_path, "best_metric_model_classification3d_array.pth")))
@@ -178,7 +187,8 @@ def main():
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
 
     Model: {model}
-    Optimizer: {optimizer}
+
+    Optimizer: {optimizer}    
     """
     # auc: {roc_auc_score(y_true, y_pred, multi_class='ovr')}
     # print(y_true)
@@ -187,7 +197,7 @@ def main():
     f.write(msg)
     f.close()
 
-    fig = plt.figure("train", (12, 6))
+    fig = plt.figure(num='_'.join(modality), figsize=(12, 6))
     plt.subplot(1, 2, 1)
     plt.title("Epoch Average Loss")
     x = [i + 1 for i in range(len(epoch_loss_values))]
@@ -216,4 +226,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from itertools import combinations
+    
+    modalities = ['t1_block', 't2_block', 'flair_block', 't1ce_block']
+    # for m in ['t1_block', 't2_block', 'flair_block', 't1ce_block']:
+    #     main(modality=[m], verbose=True)
+
+    for m in combinations(p=modalities, r=2):
+        main(modality=list(m), verbose=True)

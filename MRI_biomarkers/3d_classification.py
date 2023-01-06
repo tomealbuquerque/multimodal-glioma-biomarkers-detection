@@ -232,5 +232,10 @@ if __name__ == "__main__":
     # for m in ['t1_block', 't2_block', 'flair_block', 't1ce_block']:
     #     main(modality=[m], verbose=True)
 
-    for m in combinations(p=modalities, r=2):
+    # for m in combinations(modalities, r=2):
+    #     main(modality=list(m), verbose=True)
+
+    for m in combinations(modalities, 3):
         main(modality=list(m), verbose=True)
+    
+    main(modality=modalities, verbose=True)

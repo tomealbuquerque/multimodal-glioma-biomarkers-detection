@@ -24,25 +24,26 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
         else:
             ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
 
-        lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
+        lbs += [int(all([label['idh1'], label['ioh1p15q']])) for label in labels]
 
     return ims, np.array(lbs, dtype=np.int64)
 
 
-def main(modality, fold, verbose=False):
+def main(verbose=False):
     resize_ps = 96
 
-    # modality = ['flair_block']
+    modality = ['t1ce_block']
+    # modality = ['t1ce_block', 'flair_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
-    # fold = 2
+    fold = 0
     batch_size = 16
     max_epochs = 100
     lower_lr = 5e-5
-    num_classes = 3
+    num_classes = 2
 
     # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=num_classes)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=num_classes, post_activation='x')
-    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=num_classes, dropout_prob=0.2)
+    model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=num_classes, dropout_prob=0.15)
     
 
     train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
@@ -73,9 +74,7 @@ def main(modality, fold, verbose=False):
 
     optimizer = torch.optim.Adam(model.parameters(), round(steepest_lr, 5))
 
-    trial_name = '_'.join(modality)
-    trial_name += f'_fold{fold}_'
-    trial_name += '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
+    trial_name = '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
     trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
                               f"trial_{trial_name}")
 
@@ -84,17 +83,6 @@ def main(modality, fold, verbose=False):
     os.makedirs(trial_path, exist_ok=True)
 
     f = open(os.path.join(trial_path, 'records.txt'), 'a+')
-
-    msg = f"""
-        Model: {model.__str__().split('(')[0]}
-        batch size: {batch_size}
-        epochs: {max_epochs}
-        fold: {fold}
-        modality used: {modality}
-        trained on {len(train_ds)} images
-        evaluates on {len(val_ds)} images from test set.
-    """
-    f.write(msg)
 
     # start a typical PyTorch training
     best_metric = -1
@@ -151,7 +139,7 @@ def main(modality, fold, verbose=False):
                 best_metric = metric
                 best_metric_epoch = epoch + 1
                 torch.save(model.state_dict(),
-                            os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth"))
+                            os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
                 print("saved new best metric model")
             if verbose:
                 print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
@@ -161,17 +149,18 @@ def main(modality, fold, verbose=False):
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
 
-    # Evaluate
+    # # Evaluate
     images, labels = get_images_labels(modality=[random.choice(modality)], dataset_type='test', fold=fold)
     test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2,
                                  pin_memory=torch.cuda.is_available())
 
-    model.load_state_dict(torch.load(os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth")))
+    model.load_state_dict(torch.load(os.path.join(trial_path, "best_metric_model_classification3d_array.pth")))
     model.eval()
 
     y_true = []
     y_pred = []
+    
     with torch.no_grad():
         for test_data in test_dataloader:
             test_images, test_labels = test_data[0].to(device), test_data[1].to(device)
@@ -180,22 +169,32 @@ def main(modality, fold, verbose=False):
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
-    
-    print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
+
+    print(classification_report(y_true, y_pred, target_names=['0', '1'], digits=4))
 
     msg = f"""
+    Model: {model.__str__().split('(')[0]}
+    batch size: {batch_size}
+    epochs: {max_epochs}
+    fold: {fold}
+    modality used: {modality}
+    trained on {len(train_ds)} images
+    evaluates on {len(val_ds)} images from test set.
     Metrics: 
     accuracy: {accuracy_score(y_true, y_pred)}
     mae: {mean_absolute_error(y_true, y_pred)}
     
     Classfication report:
-    {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
+    {classification_report(y_true, y_pred, target_names=['0', '1'], digits=4)}
 
     Model: {model}
 
     Optimizer: {optimizer}    
     """
-    # # auc: {roc_auc_score(y_true, y_pred, multi_class='ovr')}
+    # auc: {roc_auc_score(y_true, y_pred, multi_class='ovr')}
+    # print(y_true)
+    # print(y_pred)
+
     f.write(msg)
     f.close()
 
@@ -219,33 +218,25 @@ def main(modality, fold, verbose=False):
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
 
-    cm = confusion_matrix(y_true, y_pred, labels=[0, 1, 2])
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1, 2])
+    cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1])
     disp.plot()
     plt.savefig(os.path.join(trial_path, 'confusion_matrix.png'))
-    
+
     print('Finished!')
 
 
 if __name__ == "__main__":
     # from itertools import combinations
-    # print('Hello')
+    main(verbose=True)
     # modalities = ['t1_block', 't2_block', 'flair_block', 't1ce_block']
-    # main(modality=['flair_block', 't1ce_block'], verbose=True)
-    # for m in ['t1ce_block']:
+    # for m in modalities:
     #     main(modality=[m], verbose=True)
-    # for m in ['flair_block']:
-    #     main(modality=[m], verbose=True)
-    main(modality=['t1ce_block', 'flair_block'], fold=2, verbose=True)
-    main(modality=['t1ce_block', 'flair_block'], fold=3, verbose=True)
-    main(modality=['t1ce_block', 'flair_block'], fold=4, verbose=True)
-    main(modality=['t1ce_block'], fold=4, verbose=True)
-    # main(modality=['t1_block'], verbose=True)
-    # main(modality=['t2_block'], verbose=True)
-    # for m in combinations(modalities, r=2):
+
+    # for m in combinations(p=modalities, r=2):
     #     main(modality=list(m), verbose=True)
 
-    # for m in combinations(modalities, 3):
+    # for m in combinations(p=modalities, r=3):
     #     main(modality=list(m), verbose=True)
     
     # main(modality=modalities, verbose=True)

@@ -29,12 +29,13 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
     return ims, np.array(lbs, dtype=np.int64)
 
 
-def main(verbose=False):
+def main(fold, verbose=False):
     resize_ps = 96
 
-    modality = ['flair', 't1ce']
+    modality = ['t1ce_block']
+    # modality = ['t1ce_block', 'flair_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
-    fold = 0
+    # fold = 0
     batch_size = 16
     max_epochs = 100
     lower_lr = 5e-5
@@ -150,7 +151,7 @@ def main(verbose=False):
 
     # # Evaluate
     images, labels = get_images_labels(modality=[random.choice(modality)], dataset_type='test', fold=fold)
-    test_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
+    test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2,
                                  pin_memory=torch.cuda.is_available())
 
@@ -227,7 +228,8 @@ def main(verbose=False):
 
 if __name__ == "__main__":
     # from itertools import combinations
-    main(verbose=True)
+    main(fold=0, verbose=True)
+    main(fold=4, verbose=True)
     # modalities = ['t1_block', 't2_block', 'flair_block', 't1ce_block']
     # for m in modalities:
     #     main(modality=[m], verbose=True)

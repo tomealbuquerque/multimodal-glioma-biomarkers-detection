@@ -7,7 +7,8 @@ import monai
 from monai.data import ImageDataset, DataLoader
 from monai.optimizers import LearningRateFinder
 from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, ScaleIntensity
-from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, roc_auc_score, confusion_matrix, \
+    ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
 
@@ -44,9 +45,9 @@ def main(fold, verbose=False):
     # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=num_classes)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=num_classes, post_activation='x')
     model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=num_classes, dropout_prob=0.15)
-    
 
-    train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
+    train_transforms = Compose(
+        [ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
 
     images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
@@ -68,7 +69,7 @@ def main(fold, verbose=False):
     lr_finder = LearningRateFinder(model, optimizer, loss_function, device=device)
     lr_finder.range_test(train_loader, val_loader, end_lr=1e-0, num_iter=20)
     steepest_lr, _ = lr_finder.get_steepest_gradient()
-    
+
     if verbose:
         print(f'Find the steepest learning rate {steepest_lr}')
 
@@ -87,7 +88,7 @@ def main(fold, verbose=False):
     # start a typical PyTorch training
     best_metric = -1
     epoch_loss_values = []
-    loss_tes=[]
+    loss_tes = []
     metric_values = []
     for epoch in range(max_epochs):
         if verbose:
@@ -139,11 +140,11 @@ def main(fold, verbose=False):
                 best_metric = metric
                 best_metric_epoch = epoch + 1
                 torch.save(model.state_dict(),
-                            os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
+                           os.path.join(trial_path, "best_metric_model_classification3d_array.pth"))
                 print("saved new best metric model")
             if verbose:
                 print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
-                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
+                      f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
                 f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
                         f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
@@ -160,7 +161,7 @@ def main(fold, verbose=False):
 
     y_true = []
     y_pred = []
-    
+
     with torch.no_grad():
         for test_data in test_dataloader:
             test_images, test_labels = test_data[0].to(device), test_data[1].to(device)
@@ -183,7 +184,7 @@ def main(fold, verbose=False):
     Metrics: 
     accuracy: {accuracy_score(y_true, y_pred)}
     mae: {mean_absolute_error(y_true, y_pred)}
-    
+
     Classfication report:
     {classification_report(y_true, y_pred, target_names=['0', '1'], digits=4)}
 
@@ -239,5 +240,5 @@ if __name__ == "__main__":
 
     # for m in combinations(p=modalities, r=3):
     #     main(modality=list(m), verbose=True)
-    
+
     # main(modality=modalities, verbose=True)

@@ -30,23 +30,23 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
     return ims, np.array(lbs, dtype=np.int64)
 
 
-def main(modality, fold, max_epochs=100, verbose=False):
+def main(modality, fold, verbose=False):
     resize_ps = 96
 
     # modality = ['flair_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     # fold = 2
     batch_size = 16
-    # max_epochs = 100
+    max_epochs = 100
     lower_lr = 5e-5
     num_classes = 3
 
     # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=num_classes)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=num_classes, post_activation='x')
     model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=num_classes, dropout_prob=0.2)
-    
 
-    train_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
+    train_transforms = Compose(
+        [ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
 
     images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
@@ -68,7 +68,7 @@ def main(modality, fold, max_epochs=100, verbose=False):
     lr_finder = LearningRateFinder(model, optimizer, loss_function, device=device)
     lr_finder.range_test(train_loader, val_loader, end_lr=1e-0, num_iter=20)
     steepest_lr, _ = lr_finder.get_steepest_gradient()
-    
+
     if verbose:
         print(f'Find the steepest learning rate {steepest_lr}')
 
@@ -89,14 +89,14 @@ def main(modality, fold, max_epochs=100, verbose=False):
     # start a typical PyTorch training
     best_metric = -1
     epoch_loss_values = []
-    loss_tes=[]
+    loss_tes = []
     metric_values = []
     for epoch in range(max_epochs):
         if verbose:
             print("-" * 10)
             print(f"epoch {epoch + 1}/{max_epochs}")
-            # f.write("-" * 10 + '\n')
-            # f.write(f"epoch {epoch + 1}/{max_epochs}\n")
+            f.write("-" * 10 + '\n')
+            f.write(f"epoch {epoch + 1}/{max_epochs}\n")
         model.train()
         epoch_loss = 0
         step = 0
@@ -113,12 +113,12 @@ def main(modality, fold, max_epochs=100, verbose=False):
             epoch_len = len(train_ds) // train_loader.batch_size
             if verbose:
                 print(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}")
-                # f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}\n")
+                f.write(f"{step}/{epoch_len}, train_loss: {loss.item():.4f}\n")
         epoch_loss /= step
         epoch_loss_values.append(epoch_loss)
         if verbose:
             print(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}")
-            # f.write(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}\n")
+            f.write(f"epoch {epoch + 1} average loss: {epoch_loss:.4f}\n")
 
         model.eval()
         with torch.no_grad():
@@ -141,11 +141,11 @@ def main(modality, fold, max_epochs=100, verbose=False):
                 best_metric = metric
                 best_metric_epoch = epoch + 1
                 torch.save(model.state_dict(),
-                            os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth"))
+                           os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth"))
                 print("saved new best metric model")
             if verbose:
                 print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
-                        f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
+                      f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}")
                 f.write(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
                         f"best accuracy: {best_metric:.4f} at epoch {best_metric_epoch}\n")
     print(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}")
@@ -175,7 +175,7 @@ def main(modality, fold, max_epochs=100, verbose=False):
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
-    
+
     print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
 
     msg = f"""
@@ -228,7 +228,7 @@ def main(modality, fold, max_epochs=100, verbose=False):
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1, 2])
     disp.plot()
     plt.savefig(os.path.join(trial_path, 'confusion_matrix.png'))
-    
+
     print('Finished!')
 
 

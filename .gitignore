@@ -14,3 +14,4 @@ MIL/checkpoint_best.pth
 MRI_biomarkers/__pycache__
 MRI_biomarkers/results
 /MRI_biomarkers/ssl_results/
+/MRI_biomarkers/saved_ckpt/

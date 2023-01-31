@@ -33,8 +33,7 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 def main(test_modality, ckpt_path, fold=0, verbose=False):
     resize_ps = 96
 
-    modality = ['t1ce_block']
-    # modality = ['t1ce_block', 'flair_block']
+    modality = ['t1ce_block', 'flair_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     batch_size = 16
     max_epochs = 100
@@ -44,7 +43,7 @@ def main(test_modality, ckpt_path, fold=0, verbose=False):
     
     print(ckpt_path)
     p = ckpt_path.split(os.sep)[-1].split('.')[0]
-    trial_name = f'eval_{p}'
+    trial_name = f'predictions_MRI_{p}'
     trial_name += '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
     trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
                               f"trial_{trial_name}")
@@ -53,9 +52,11 @@ def main(test_modality, ckpt_path, fold=0, verbose=False):
                 exist_ok=True)
     os.makedirs(trial_path, exist_ok=True)
 
-    f = open(os.path.join(trial_path, 'records.txt'), 'a+')
+    f = open(os.path.join(trial_path, 'records.csv'), 'w')
     # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=num_classes)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=num_classes, post_activation='x')
+    
+    f.write('file,target,prediction,probability_0,probability_1,probability_2\n')
     
     model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=num_classes, dropout_prob=0.2)
     model.load_state_dict(torch.load(ckpt_path, map_location=device))
@@ -78,33 +79,36 @@ def main(test_modality, ckpt_path, fold=0, verbose=False):
             test_outputs = model(test_images)
             y_pred_prob.append(nn.Softmax(dim=1)(test_outputs).cpu().numpy()[0])
             test_outputs = test_outputs.argmax(dim=1)
-            # print(test_outputs)
+            f.write(f'{test_images},{test_labels},{test_outputs},{y_pred_prob[0]},{y_pred_prob[1]},{y_pred_prob[2]}')
             # test_outputs = model(test_images)[0].argmax(dim=1) # ViT
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
 
-    msg = f"""
-    Eval: {ckpt_path}
+    # for name, target, prob, pred in zip(val_dset.slidenames, val_dset.targets, probs,Phat):
+        
+    #     fp.write('{},{},{},{},{},{}\n'.format(name, target, pred, prob[0],prob[1],prob[2]))
+        
+    # msg = f"""
+    # Eval: {ckpt_path}
 
-    Model: {model.__str__().split('(')[0]}
-    batch size: {batch_size}
-    epochs: {max_epochs}
-    fold: {fold}
-    modality used: {modality}
-    evaluates on modality {test_modality} with {len(test_ds)} images.
+    # Model: {model.__str__().split('(')[0]}
+    # batch size: {batch_size}
+    # epochs: {max_epochs}
+    # fold: {fold}
+    # evaluates on modality {test_modality} with {len(test_ds)} images.
     
-    Metrics: 
-    accuracy: {accuracy_score(y_true, y_pred)}
-    balanced accuracy: {balanced_accuracy_score(y_true, y_pred)}
-    mae: {mean_absolute_error(y_true, y_pred)}
-    auc: {roc_auc_score(y_true, np.vstack(y_pred_prob), multi_class='ovr')}
+    # Metrics: 
+    # accuracy: {accuracy_score(y_true, y_pred)}
+    # balanced accuracy: {balanced_accuracy_score(y_true, y_pred)}
+    # mae: {mean_absolute_error(y_true, y_pred)}
+    # auc: {roc_auc_score(y_true, np.vstack(y_pred_prob), multi_class='ovr')}
 
-    Classfication report:
-    {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
-    """
+    # Classfication report:
+    # {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
+    # """
 
-    f.write(msg)
+    # f.write(msg)
     f.close()
 
     print('Finished!')
@@ -114,8 +118,11 @@ if __name__ == "__main__":
     
     for idx in range(5):
         for tm in [['t1ce_block'], ['flair_block'], ['t1ce_block', 'flair_block']]:
+            # path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/orig_t1ce_flair_fold{idx}.pth'
             path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/multiclass_fold{idx}_t1ce_flair.pth'
             main(test_modality=tm, ckpt_path=path, fold=idx, verbose=True)
-
+            break
+            # path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/orig_t1ce_fold{idx}.pth'
             path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/multiclass_fold{idx}_t1ce.pth'
             main(test_modality=tm, ckpt_path=path, fold=idx, verbose=True)
+        break

@@ -2,7 +2,9 @@
 # =============================================================================
 # Preprocessing code for Multimodal Glioma biomarkers prognosis using TCGA dataset
 
-# X-> MRI('FLAIR', 'T2', 'T1', 'T1Gd'); WSI(file_name); clinical_data(gender,age)
+# X-> MRI('FLAIR', 'T2', 'T1', 'T1ce', 'FLAIR_BLOCK',
+          'T2_block', 'T1_BLOCK', 'T1ce_BLOCK');
+      WSI(file_name); clinical_data(gender,age)
 # Y-> biomarkers ('IDH1_mut', 'loh1p/19q_cnv)
 
 # K-folds generation for cross-validation purposes
@@ -62,10 +64,14 @@ for idx, pat in enumerate(df_clean['subject_id']):
     """
     create array of dictionaries with input data per patient
     {
-    'flair':str (path_to_image),
-    't1': str (path_to_image),
     't1ce': str (path_to_image),
     't2': str (path_to_image),
+    'flair':str (path_to_image),
+    't2_block':str (path_to_image),
+    't1': str (path_to_image),
+    't1_block': str (path_to_image),
+    'flair_block': str (path_to_image),
+    't1ce_block': str (path_to_image),
     'slide': str (path_to_image),
     'tiles_coords': list of tuples (int,int)
     'gender': int,
@@ -73,10 +79,14 @@ for idx, pat in enumerate(df_clean['subject_id']):
     }
 
     """
-    X_full_data.append({'flair': image_modality[0],
-                        't1': image_modality[1],
-                        't1ce': image_modality[2],
-                        't2': image_modality[3],
+    X_full_data.append({'t1ce': image_modality[0],
+                        't2': image_modality[1],
+                        'flair': image_modality[2],
+                        't2_block': image_modality[3],
+                        't1': image_modality[4],
+                        't1_block': image_modality[5],
+                        'flair_block': image_modality[6],
+                        't1ce_block': image_modality[7],
                         'slide': os.path.join("Pathology", df_clean.loc[idx, 'slide_id']),
                         'tiles_coords': get_tiles(slide_path=os.path.join("Pathology", df_clean.loc[idx, 'slide_id']),
                                                   tile_size=args.tile_size,
@@ -97,6 +107,7 @@ for idx, pat in enumerate(df_clean['subject_id']):
 
 X = np.array(X_full_data)
 Y = np.array(Y_full_data)
+
 
 # =============================================================================
 # Create Kfolds for cross-validation

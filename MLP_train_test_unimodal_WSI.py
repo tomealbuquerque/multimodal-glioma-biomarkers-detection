@@ -16,7 +16,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.models as models
 from sklearn.metrics import accuracy_score, roc_auc_score, mean_absolute_error
-from rnn_top_data import create_max_mix_tiles_dataset, create_max_tiles_dataset, create_max_tiles_dataset_bin,create_max_mix_tiles_dataset_bin,create_max_tiles_dataset_expected_value_bin
+from order_top_data import create_max_mix_tiles_dataset, create_max_tiles_dataset, create_max_tiles_dataset_bin,create_max_mix_tiles_dataset_bin,create_max_tiles_dataset_expected_value_bin
 
 parser = argparse.ArgumentParser(description='MIL model with aggregator on top training script')
 parser.add_argument('--train_lib', type=str, default='train', help='path to train MIL library binary')

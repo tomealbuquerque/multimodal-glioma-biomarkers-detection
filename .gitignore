@@ -2,7 +2,7 @@ data_multimodal_tcga/Radiology/*
 weights/*
 0_MRI_embedder_weights/*
 0_WSI_embedder_weights/*
-5_plot_WSI_heatmaps/plots_bin/*
-5_plot_WSI_heatmaps/plots_bin_com_casos/*
-5_plot_WSI_heatmaps/plots_multi/*
+4_plot_WSI_heatmaps/plots_bin/*
+4_plot_WSI_heatmaps/plots_bin_com_casos/*
+4_plot_WSI_heatmaps/plots_multi/*
 2_results/*

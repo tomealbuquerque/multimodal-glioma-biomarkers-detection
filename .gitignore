@@ -6,3 +6,6 @@ weights/*
 4_plot_WSI_heatmaps/plots_bin_com_casos/*
 4_plot_WSI_heatmaps/plots_multi/*
 2_results/*
+!2_results/link_with_results.txt
+!0_MRI_embedder_weights/link_with_weights.txt
+!0_WSI_embedder_weights/link_with_weights.txt

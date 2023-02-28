@@ -6,7 +6,7 @@
 # =============================================================================
 """
 import os
-os.add_dll_directory('C:\\Users\\ge92tis\\openslide-win64-20220811\\bin')
+#os.add_dll_directory('C:\\Users\\ge92tis\\openslide-win64-20220811\\bin')
 import openslide
 from openslide.deepzoom import DeepZoomGenerator
 import cv2
@@ -34,7 +34,7 @@ def get_tiles(slide_path, tile_size=512, threshold_for_otsu=0.4):
     max_level= data_gen.level_count-1
     x=data_gen.level_tiles[max_level]
     
-    cords_deep_zoom, coords_512 = [], []
+    # cords_deep_zoom, coords_512 = [], []
     count_512 = 0
     x, y = 0, 0
     
@@ -42,7 +42,7 @@ def get_tiles(slide_path, tile_size=512, threshold_for_otsu=0.4):
     slide_dims = slide.dimensions
     
     down_factor = int(slide.level_downsamples[-1])
-    isup = 0
+    # isup = 0
     
     # Generate thumbnail file
     slide_thumb = slide.get_thumbnail((int(np.floor(slide_dims[0]/down_factor)),int(np.floor(slide_dims[1]/down_factor))))
@@ -59,7 +59,7 @@ def get_tiles(slide_path, tile_size=512, threshold_for_otsu=0.4):
     # Generate tiles for .svs & thumbnail files
     grid_loc_512, coords_512 = [], []
     count_512 = 0
-    patch_size  = tile_size
+    # patch_size  = tile_size
     
     # tile_size = patch_size - 2*overlap  
     tile_size = tile_size
@@ -81,7 +81,7 @@ def get_tiles(slide_path, tile_size=512, threshold_for_otsu=0.4):
     
                 if (np.sum(new_tile_otsu, axis=2) == 0).sum() <= np.round((1-threshold)*(tile_size/down_factor)**2):
             
-                    new_tile_svs = np.array(tiles_svs.get_tile(max_level_svs, (x, y)), dtype=np.uint8)
+                    # new_tile_svs = np.array(tiles_svs.get_tile(max_level_svs, (x, y)), dtype=np.uint8)
                     tile_coords = tiles_svs.get_tile_coordinates(max_level_svs, (x, y))[0]
         
                     grid_loc_512.append((x,y))

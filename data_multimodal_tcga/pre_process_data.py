@@ -14,11 +14,11 @@
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--tile_size', type=int, choices=[224,512,1024],default=512)
+parser.add_argument('--tile_size', type=int, choices=[224,512,1024],default=224)
 parser.add_argument('--threshold_otsu_tiles', type=float ,default=0.4)
 parser.add_argument('--folds', type=int, choices=range(5),default=5)
 parser.add_argument('--seed', type=int,default=1234)
-parser.add_argument('--name_file', type=str, default="multimodal_glioma_data.pickle")
+parser.add_argument('--name_file', type=str, default="multimodal_glioma_data_224.pickle")
 args = parser.parse_args()
 
 
@@ -79,7 +79,7 @@ for idx,pat in enumerate(df_clean['subject_id']):
                         't1ce':image_modalilty[2],
                         't2':image_modalilty[3],
                         'slide':os.path.join("Pathology",df_clean.loc[idx,'slide_id']),
-                        'tiles_coords':get_tiles(slide_path=os.path.join("Pathology",df_clean.loc[idx,'slide_id']),
+                        'tiles_coords':get_tiles(slide_path=os.path.join("E:\\Pathology",df_clean.loc[idx,'slide_id']),
                                                  tile_size=args.tile_size, threshold_for_otsu=args.threshold_otsu_tiles),
                         'gender':df_clean.loc[idx,'is_female'],
                         'age':df_clean.loc[idx,'age']})#
@@ -89,11 +89,11 @@ for idx,pat in enumerate(df_clean['subject_id']):
     #create array of dictionares with target data per patient
     {
     'idh1' int, 
-    'ioh1p15q': int
+    'ioh1p19q': int
     }
     
     """    
-    Y_full_data.append({'idh1':int(df_clean.loc[idx,'IDH1_mut']),'ioh1p15q':int(df_clean.loc[idx,'loh1p/19q_cnv'])})
+    Y_full_data.append({'idh1':int(df_clean.loc[idx,'IDH1_mut']),'ioh1p19q':int(df_clean.loc[idx,'loh1p/19q_cnv'])})
 
 
 X = np.array(X_full_data)

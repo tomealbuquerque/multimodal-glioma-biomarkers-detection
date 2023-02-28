@@ -1,8 +1,0 @@
-
-
-Model:architecture-resnext50_32x4d-method-UniMRI-MRI_type-flair-fold-2-epochs-100-batchsize-32-lr-0.0001 
-accuracy:0.7297297297297297 
-mae:0.40540540540540543 
-f1:0.7149040723508808 
-recall:0.7297297297297297 
-precision:0.7285747285747285

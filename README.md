@@ -108,4 +108,12 @@ To run the aggregation models you must have at this point 4 different files:
   
 If you have this files you are ready to train and test the proposed aggregators:
 There are 5 different .py files for the aggregators. 
+  
+You can run it using the following code:
+ 
+ ```
+ #For Unimodal WSI
+python RNN_train_ordinal_bin_MIL.py --fold 0 --s 10 --mix 'expected' --model 'checkpoint_best_512_bin_fold_0.pth' --results_folder 'path_results_folder'
+ ```
+  
 </details>

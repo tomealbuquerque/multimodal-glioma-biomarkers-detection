@@ -1,4 +1,4 @@
-## Multimodal Context-Aware Detection of Glioma Biomarkers using MRI and WSI
+# Multimodal Context-Aware Detection of Glioma Biomarkers using MRI and WSI
 
 by Tomé Albuquerque, Mei Ling Fang, Benedikt Wiestler, Claire Delbridge, Maria João M. Vasconcelos, Jaime S. Cardoso and
 Peter Schüffler
@@ -33,7 +33,9 @@ pip install -r requirements.txt
 
 ## <div align="center">1) Pre-processing</div>
 
-First is necessary to create a *.pickle* with all the data from MRI and WSI for the training and test process.
+First, let's create a "data.pickle" with a dictionary containing all the data from MRI and WSI for the training and test process for 5-folds. The dictionary will have the following structure:
+
+
   
 Run: 
 ```

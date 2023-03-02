@@ -92,3 +92,6 @@ python WSI_embedder\MIL_512_tiles\MIL_get_GRIDS.py --fold 0 --model 'checkpoint_
 |   **2**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
 |   **3**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
 |   **4**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
+
+
+## <div align="center">3) Train/test multimodal agregator (MRI + WSI)</div>

@@ -31,11 +31,9 @@ pip install -r requirements.txt
 <details Open>
 <summary>Usage</summary>
 
-## <div align="center">Models</div>
+## <div align="center">1) Models</div>
 
 First is necessary to create a *.pickle* with all the data from MRI and WSI for the training and test process.
-  
-<b>1) Pre-processing<b>
   
 Run: 
 ```

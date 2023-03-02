@@ -3,8 +3,8 @@
 by Tomé Albuquerque, Mei Ling Fang, Benedikt Wiestler, Claire Delbridge, Maria João M. Vasconcelos, Jaime S. Cardoso and
 Peter Schüffler
 
-Schematic representation of the different models used in this work:<br />
-<img src="https://github.com/tomealbuquerque/multimodal-glioma-biomarkers-detection/blob/main/Figures/scheme.PNG" width="600">
+<div align="center">Schematic representation of the different models used in this work:<br />
+<img src="https://github.com/tomealbuquerque/multimodal-glioma-biomarkers-detection/blob/main/Figures/scheme.PNG" width="600"></div>
 
 ## <div align="center">Documentation</div>
 <details Close>

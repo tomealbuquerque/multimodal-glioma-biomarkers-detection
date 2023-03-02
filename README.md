@@ -67,12 +67,12 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 ## <div align="center">2) Train embedder (MRI and WSI)</div>
 
-###MRI embedder
+* MRI embedder
 
 missing information...
 
 
-###WSI embedder
+* WSI embedder
 
 
 To train the emmbeder for 552x512 tiles run the following command:

@@ -70,10 +70,10 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 
 You can skip this step and use the provided pre-trained models for WSI and for MRI:
-| **fold** | WSI | Original MRI T1ce | Original MRI T1Ce + FLAIR | Segmented MRI T1ce | Segmented MRI T1ce + FLAIR |
-|:--------:|:---:|:-----------------:|:-------------------------:|:------------------:|:--------------------------:|
-|     0    | [x] |                   |                           |                    |                            |
-|     1    | [x] |                   |                           |                    |                            |
-|     2    | [X] |                   |                           |                    |                            |
-|     3    | [X] |                   |                           |                    |                            |
-|     4    | [X] |                   |                           |                    |                            |
+| **fold** | **WSI** | **Original - MRI T1ce** | **Original - MRI - T1Ce + FLAIR** | **Segmented - MRI - T1ce** | **Segmented - MRI - T1ce + FLAIR** |
+|:--------:|:-------:|:-----------------------:|:---------------------------------:|:--------------------------:|:----------------------------------:|
+|   **0**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
+|   **1**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
+|   **2**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
+|   **3**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
+|   **4**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |

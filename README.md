@@ -24,7 +24,7 @@ Peter Schüffler
 * skimage==0.0
 * torch==1.10.0
 * torchvision==0.11.1
-
-  ```bash
+  
+```
 pip install -r requirements.txt
 ```

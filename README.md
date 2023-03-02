@@ -84,6 +84,7 @@ python WSI_embedder\MIL_512_tiles\MIL_get_GRIDS.py --fold 0 --model 'checkpoint_
 ```
 
 #You can skip the training of the embedders and use the provided pre-trained models weights for WSI and for MRI:
+
 | **fold** | **WSI** | **Original - MRI T1ce** | **Original - MRI - T1Ce + FLAIR** | **Segmented - MRI - T1ce** | **Segmented - MRI - T1ce + FLAIR** |
 |:--------:|:-------:|:-----------------------:|:---------------------------------:|:--------------------------:|:----------------------------------:|
 |   **0**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |

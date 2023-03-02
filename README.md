@@ -28,4 +28,4 @@ pip install -r requirements.txt
 ```
 
 <summary>Usage</summary>
-## 1) Preprocessing
+**1) Preprocessing**

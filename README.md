@@ -41,6 +41,11 @@ X[fold] = {
             't1': str (path_to_image),
             't1ce': str (path_to_image),
             't2': str (path_to_image),
+            'flair_block':str (path_to_image),
+            't1_block': str (path_to_block),
+            't1ce_block': str (path_to_block),
+            't2_block': str (path_to_block),
+            'flair_block':str (path_to_block),
             'slide': str (path_to_slide),
             'tiles_coords': list of tuples (int,int)
             'tiles_coords_level': list of tuples (int,int)
@@ -54,9 +59,11 @@ Y[fold] = {
           }
 ```
  
-Run: 
+To create run: 
 ```
 python data_multimodal_tcga/pre_process_data_multi_level.py
 ```  
-  
+P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 </details>
+
+

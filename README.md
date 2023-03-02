@@ -67,6 +67,16 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 ## <div align="center">2) Train embedder (MRI and WSI)</div>
 
+###MRI embedder
+missing information...
+
+###WSI embedder
+
+To train the emmbeder for 552x512 tiles run the following command:
+```
+python WSI_embedder\MIL_512_tiles\mil_train_bin.py --fold 0 --model 'checkpoint_best_512_bin_fold_0.pth'
+```
+for 2048x2048 tiles change just the path: WSI_embedder\MIL_2048_tiles\mil_train_bin.py
 
 
 You can skip this step and use the provided pre-trained models weights for WSI and for MRI:

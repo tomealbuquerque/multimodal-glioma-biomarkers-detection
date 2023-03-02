@@ -6,7 +6,7 @@ Peter Schüffler
 
 ## <div align="center">Documentation</div>
 <details Close>
-<summary>#Requirements</summary>
+<summary>Requirements</summary>
 
 * Image==1.5.33
 * matplotlib==3.5.1

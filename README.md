@@ -74,12 +74,16 @@ missing information...
 
 To train the emmbeder for 552x512 tiles run the following command:
 ```
-python WSI_embedder\MIL_512_tiles\mil_train_bin.py --fold 0 --model 'checkpoint_best_512_bin_fold_0.pth'
+python WSI_embedder\MIL_512_tiles\mil_train_bin.py --fold 0
 ```
 for 2048x2048 tiles change just the path: WSI_embedder\MIL_2048_tiles\mil_train_bin.py
 
+After training the model it is necessary to generate a list of all tiles per slide with the output probabilities (e.g."predictions_grid_{typee}_fold_{args.fold}_bin.csv"), for that run:
+```
+python WSI_embedder\MIL_512_tiles\MIL_get_GRIDS.py --fold 0 --model 'checkpoint_best_512_bin_fold_0.pth'
+```
 
-You can skip this step and use the provided pre-trained models weights for WSI and for MRI:
+#You can skip the training of the embedders and use the provided pre-trained models weights for WSI and for MRI:
 | **fold** | **WSI** | **Original - MRI T1ce** | **Original - MRI - T1Ce + FLAIR** | **Segmented - MRI - T1ce** | **Segmented - MRI - T1ce + FLAIR** |
 |:--------:|:-------:|:-----------------------:|:---------------------------------:|:--------------------------:|:----------------------------------:|
 |   **0**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |

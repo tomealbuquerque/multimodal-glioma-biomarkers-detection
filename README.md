@@ -7,8 +7,8 @@ Peter Schüffler
 <img src="https://github.com/tomealbuquerque/multimodal-glioma-biomarkers-detection/blob/main/Figures/scheme.PNG" width="600"></div>
 
 ## <div align="center">Documentation</div>
-
-<summary><details Close>Requirements</summary>
+<details Open>
+<summary>Requirements</summary>
 
 * Image==1.5.33
 * monai==1.0.0
@@ -26,7 +26,6 @@ Peter Schüffler
 ```
 pip install -r requirements.txt
 ```
- 
-<details Open>
+
 <summary>Usage</summary>
 ## 1) Preprocessing

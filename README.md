@@ -106,6 +106,6 @@ To run the aggregation models you must have at this point 4 different files:
   * WSI_embedder_weights;
   * List of output probs ("predictions_grid_{typee}_fold_{args.fold}_bin.csv")
   
-If you have this files you are ready to train and test the proposed aggreagtors:
-There are 5 .py files for the aggregators. 
+If you have this files you are ready to train and test the proposed aggregators:
+There are 5 different .py files for the aggregators. 
 </details>

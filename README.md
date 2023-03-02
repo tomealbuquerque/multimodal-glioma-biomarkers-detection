@@ -113,7 +113,7 @@ You can run it using the following code:
  
  ```
  #For Unimodal WSI
-python RNN_train_ordinal_bin_MIL.py --fold 0 --s 10 --mix 'expected' --model 'checkpoint_best_512_bin_fold_0.pth' --results_folder 'path_results_folder'
+python MLP_train_test_unimodal_WSI.py --fold 0 --s 10 --mix 'expected' --model 'checkpoint_best_512_bin_fold_0.pth' --results_folder 'path_results_folder'
  ```
   
 </details>

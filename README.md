@@ -45,7 +45,6 @@ X[fold] = {
             't1_block': str (path_to_block),
             't1ce_block': str (path_to_block),
             't2_block': str (path_to_block),
-            'flair_block':str (path_to_block),
             'slide': str (path_to_slide),
             'tiles_coords': list of tuples (int,int)
             'tiles_coords_level': list of tuples (int,int)
@@ -66,4 +65,8 @@ python data_multimodal_tcga/pre_process_data_multi_level.py
 P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 </details>
 
+## <div align="center">2) Train embedder (MRI and WSI)</div>
 
+
+
+You can skip this step and use the provided pre-trained models for WSI and for MRI

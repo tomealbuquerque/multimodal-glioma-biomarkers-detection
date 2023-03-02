@@ -24,3 +24,5 @@ Peter Schüffler
 ```
 pip install -r requirements.txt
 ```
+<details Open>
+<summary>Usage</summary>

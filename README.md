@@ -70,11 +70,10 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 
 You can skip this step and use the provided pre-trained models for WSI and for MRI:
-|Fold |                     WSI                || acc<br><sup>top5 | Speed<br><sup>CPU ONNX<br>(ms) | Speed<br><sup>A100 TensorRT<br>(ms) | params<br><sup>(M) | FLOPs<br><sup>(B) at 640 |
+|Fold |:                    WSI               :|| acc<br><sup>top5 | Speed<br><sup>CPU ONNX<br>(ms) | Speed<br><sup>A100 TensorRT<br>(ms) | params<br><sup>(M) | FLOPs<br><sup>(B) at 640 |
 | --- | -------------------- | ---------------- | ---------------- | ------------------------------ | ----------------------------------- | ------------------ | ------------------------ |
 |  0  |224                   | 66.6             | 87.0             | 12.9                           | 0.31                                | 2.7                | 4.3                      |
 |  1  |224                   | 72.3             | 91.1             | 23.4                           | 0.35                                | 6.4                | 13.5                     |
 |  2  |224                   | 76.4             | 93.2             | 85.4                           | 0.62                                | 17.0               | 42.7                     |
 |  3  |224                   | 78.0             | 94.1             | 163.0                          | 0.87                                | 37.5               | 99.7                     |
 |  4  |224                   | 78.4             | 94.3             | 232.0                          | 1.01                                | 57.4               | 154.8                    |
-

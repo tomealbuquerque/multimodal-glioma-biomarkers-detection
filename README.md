@@ -7,8 +7,8 @@ Peter Schüffler
 <img src="https://github.com/tomealbuquerque/multimodal-glioma-biomarkers-detection/blob/main/Figures/scheme.PNG" width="600"></div>
 
 ## <div align="center">Documentation</div>
-<details Close>
-<summary>Requirements</summary>
+
+<summary><details Close>Requirements</summary>
 
 * Image==1.5.33
 * monai==1.0.0

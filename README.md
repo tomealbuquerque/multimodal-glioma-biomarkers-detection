@@ -27,7 +27,7 @@ Peter Schüffler
 pip install -r requirements.txt
 ```
 </details>
-
+<details Open>
 <summary>Usage</summary>
 1) Pre-processing
   

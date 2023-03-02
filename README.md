@@ -28,7 +28,7 @@ pip install -r requirements.txt
 ```
 </details>
 
-<details open>
 <summary>Usage</summary>
-## <div align="center">1) Pre-processing</div>
+1) Pre-processing
+  
 </details>

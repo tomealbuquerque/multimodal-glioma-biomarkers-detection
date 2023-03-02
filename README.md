@@ -99,7 +99,7 @@ python WSI_embedder\MIL_512_tiles\MIL_get_GRIDS.py --fold 0 --model 'checkpoint_
 |   **4**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |
 
 
-## <div align="center">3) Train/test multimodal agregator (MRI + WSI)</div>
+## <div align="center">3) Train/test multimodal aggregator (MRI + WSI)</div>
 To run the aggregation models you must have at this point 4 different files:
   * data array of dictionaries (1) Preprocessing);
   * MRI_embedder_weights;

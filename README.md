@@ -33,10 +33,27 @@ pip install -r requirements.txt
 
 ## <div align="center">1) Pre-processing</div>
 
-First, let's create a "data.pickle" with a dictionary containing all the data from MRI and WSI for the training and test process for 5-folds. The dictionary will have the following structure:
+First, let's create a "data.pickle" with an array of dictionaries containing all the data information from MRI and WSI for the training and test process for 5-folds. The dictionary will have the following structure:
 
-
+```
+X[fold] = {
+            'flair':str (path_to_image),
+            't1': str (path_to_image),
+            't1ce': str (path_to_image),
+            't2': str (path_to_image),
+            'slide': str (path_to_slide),
+            'tiles_coords': list of tuples (int,int)
+            'tiles_coords_level': list of tuples (int,int)
+            'gender': int, 
+            'age': int
+          }
   
+Y[fold] = {
+            'idh1' int, 
+            'ioh1p19q': int
+          }
+```
+ 
 Run: 
 ```
 python data_multimodal_tcga/pre_process_data_multi_level.py

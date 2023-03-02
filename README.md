@@ -63,7 +63,7 @@ To create run:
 python data_multimodal_tcga/pre_process_data_multi_level.py
 ```  
 P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
-</details>
+
 
 ## <div align="center">2) Train embedder (MRI and WSI)</div>
 
@@ -98,3 +98,5 @@ python WSI_embedder\MIL_512_tiles\MIL_get_GRIDS.py --fold 0 --model 'checkpoint_
 
 
 ## <div align="center">3) Train/test multimodal agregator (MRI + WSI)</div>
+
+</details>

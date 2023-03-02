@@ -69,7 +69,7 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 
 
-You can skip this step and use the provided pre-trained models for WSI and for MRI:
+You can skip this step and use the provided pre-trained models weights for WSI and for MRI:
 | **fold** | **WSI** | **Original - MRI T1ce** | **Original - MRI - T1Ce + FLAIR** | **Segmented - MRI - T1ce** | **Segmented - MRI - T1ce + FLAIR** |
 |:--------:|:-------:|:-----------------------:|:---------------------------------:|:--------------------------:|:----------------------------------:|
 |   **0**  |   [x]   |           [x]           |                [x]                |             [x]            |                 [x]                |

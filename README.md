@@ -30,5 +30,5 @@ pip install -r requirements.txt
 
 <details open>
 <summary>Usage</summary>
-**1) Preprocessing**
+## <div align="center">1) Pre-processing</div>
 </details>

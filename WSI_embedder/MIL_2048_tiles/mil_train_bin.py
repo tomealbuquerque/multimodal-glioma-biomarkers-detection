@@ -14,6 +14,7 @@ import torch.nn.functional as F
 import torch.utils.data as data
 import torchvision.transforms as transforms
 import torchvision.models as models
+import myTransforms
 
 parser = argparse.ArgumentParser(description='MIL tile classifier training script - binary')
 parser.add_argument('--train_lib', type=str, default='', help='path to train MIL library binary')
@@ -44,11 +45,6 @@ def main():
     model.to(device)
     
 
-    
-    #model = models.resnet34(True)
-    #model.fc = nn.Linear(model.fc.in_features, 3)
-    #model.cuda()
-    
     if args.weights==0.5:
         criterion = nn.CrossEntropyLoss().cuda()
     else:
@@ -59,15 +55,37 @@ def main():
     cudnn.benchmark = True
     #normalization
     normalize = transforms.Normalize(mean=[0.5,0.5,0.5],std=[0.1,0.1,0.1])
-    trans = transforms.Compose([transforms.ToTensor(), normalize])
+    
+    
+    normalize = transforms.Normalize(mean=[0.5,0.5,0.5],std=[0.1,0.1,0.1])
+    
+    #list of train transformations
+    train_transforms = transforms.Compose([
+    #transforms.ToPILImage(),
+    #transforms.ToTensor(),
+    #myTransforms.HEDJitter(theta=0.05),
+    #myTransforms.RandomElastic(alpha=2, sigma=0.06),
+    #myTransforms.RandomAffineCV2(alpha=0.1),
+    #myTransforms.RandomGaussBlur(radius=[0.5, 1.5]),
+    #myTransforms.AutoRandomRotation(),
+    transforms.RandomAffine(180, (0, 0.1), (0.9, 1.1)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.ColorJitter(saturation=(0.5, 2.0)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5,0.5,0.5],std=[0.1,0.1,0.1])
+])
+    
+    val_transforms = transforms.Compose([transforms.ToTensor(), normalize])
+
     #load data
-    train_dset = MILdataset(fold=args.fold,typet='train', transform=trans)
+    train_dset = MILdataset(fold=args.fold,typet='train', transform=train_transforms)
     train_loader = torch.utils.data.DataLoader(
         train_dset,
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
     if args.val_lib:
-        val_dset = MILdataset(fold=args.fold, typet=args.val_lib, transform=trans)
+        val_dset = MILdataset(fold=args.fold, typet=args.val_lib, transform=val_transforms)
         val_loader = torch.utils.data.DataLoader(
             val_dset,
             batch_size=args.batch_size, shuffle=False,

@@ -3,6 +3,8 @@
 by Tomé Albuquerque, Mei Ling Fang, Benedikt Wiestler, Claire Delbridge, Maria João M. Vasconcelos, Jaime S. Cardoso and
 Peter Schüffler
 
+
+## <div align="center">Documentation</div>
 <details open>
 <summary>Install</summary>
 

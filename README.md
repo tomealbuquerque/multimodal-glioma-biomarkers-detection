@@ -129,5 +129,10 @@ python MLP_train_test_multimodal_late_fusion.py --fold 0 --s 10 --mix 'expected'
 # d) mid context fusion:
 python MLP_train_test_multimodal_fusion_context_aware.py --fold 0 --s 10 --mix 'expected' --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
  ```
+The next step to generate a file per model with several metrics (e.g. ACC, AUC, MAE, F1... confusion matrix) please run:
+
+```
+python print_MIL_results_tables.py --fold 0 --s 10 --mix 'expected'  --weights CE --results_folder 'name_results_folder'
+```
   
 </details>

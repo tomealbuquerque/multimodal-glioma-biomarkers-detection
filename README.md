@@ -118,16 +118,16 @@ python MLP_train_test_unimodal_WSI.py --fold 0 --s 10 --mix 'expected' --model '
 #For multimodal MRI+WSI
 
 # a) cascade model with mid fusion:
-python MLP_train_test_multimodal_cascade_fusion.py --fold 0 --s 10 --mix expected --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
+python MLP_train_test_multimodal_cascade_fusion.py --fold 0 --s 10 --mix 'expected' --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
 
 # b) mid fusion model:
-python MLP_train_test_multimodal_mid_fusion.py --fold 0 --s 10 --mix expected --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
+python MLP_train_test_multimodal_mid_fusion.py --fold 0 --s 10 --mix 'expected' --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
 
 # c) late fusion model:
-python MLP_train_test_multimodal_late_fusion.py --fold 0 --s 10 --mix expected --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
+python MLP_train_test_multimodal_late_fusion.py --fold 0 --s 10 --mix 'expected' --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
 
 # d) mid context fusion:
-python MLP_train_test_multimodal_fusion_context_aware.py --fold 0 --s 10 --mix expected --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
+python MLP_train_test_multimodal_fusion_context_aware.py --fold 0 --s 10 --mix 'expected' --model_PATH '0_WSI_embedder_weights\checkpoint_best_512_bin_fold_0.pth' --model_MRI '0_MRI_embedder_weights\multiclass_t1ce_flair\multiclass_fold0_t1ce_flair\multiclass_checkpoint_best_tiles.pth' --weights 'CE' --results_folder 'name_results_folder'
  ```
   
 </details>

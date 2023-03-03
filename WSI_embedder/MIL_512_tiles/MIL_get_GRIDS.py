@@ -80,7 +80,7 @@ class MILdataset(data.Dataset):
                 target[i]=1
         
         
-        grids=np.array([lib[i]['tiles_coords_level'] for i in range(len(lib))], dtype=object)
+        grids=np.array([lib[i]['tiles_coords'] for i in range(len(lib))], dtype=object)
         # lib = torch.load(libraryfile)
         
         wsi_dir = "/dss/dssfs04/pn25ke/pn25ke-dss-0001/data_multimodal_tcga/Pathology"
@@ -173,7 +173,7 @@ for typee in ['train', 'test']:
     
     arr = np.vstack(all_probs)
     
-    np.savetxt(f"predictions_grid_{typee}_fold_{args.fold}_multi_level_bin.csv", arr, delimiter=",")
+    np.savetxt(f"predictions_grid_{typee}_fold_{args.fold}_bin.csv", arr, delimiter=",")
     
 
         

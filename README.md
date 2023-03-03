@@ -137,7 +137,7 @@ python print_MIL_results_tables.py --fold 0 --s 10 --mix 'expected'  --weights C
   
 </details>
 
-## Citation
+## <div align="center">Citation</div>
 If you find this work useful for your research, please cite our paper:
 
 -----

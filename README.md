@@ -136,11 +136,16 @@ python print_MIL_results_tables.py --fold 0 --s 10 --mix 'expected'  --weights C
 ```
 
 ## <div align="center">4) Plot results</div>
-To generate a results table for each modality use the following code:
+To generate a results table for each modality use the following code (change it according to your needs):
 ```
-python print_MIL_results_tables.py --fold 0 --s 10 --mix 'expected'  --weights CE --results_folder 'name_results_folder'
+python print_tables.py
 ```
+To generate ROC and box plots  for each modality use the following code (change it according to your needs):
 
+```
+python Plot_ROC_curves.py
+python Plot_box_plots.py
+```
 
 </details>
 

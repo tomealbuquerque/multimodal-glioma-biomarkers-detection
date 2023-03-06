@@ -77,7 +77,7 @@ missing information...
 * WSI embedder
 
 
-To train the emmbeder for 552x512 tiles run the following command:
+To train the emmbedder for 552x512 tiles run the following command:
 ```
 python WSI_embedder\MIL_512_tiles\mil_train_bin.py --fold 0
 ```

@@ -59,8 +59,8 @@ Y[fold] = {
             'ioh1p19q': int
           }
 ```
- 
-To create run: 
+
+Note that '_block' suggestes the segmented region of interest. To create run: 
 ```
 python data_multimodal_tcga/pre_process_data_multi_level.py
 ```  
@@ -71,13 +71,13 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 * MRI embedder
 
-missing information...
+
 
 
 * WSI embedder
 
 
-To train the emmbedder for 552x512 tiles run the following command:
+To train the embedder for 552x512 tiles run the following command:
 ```
 python WSI_embedder\MIL_512_tiles\mil_train_bin.py --fold 0
 ```

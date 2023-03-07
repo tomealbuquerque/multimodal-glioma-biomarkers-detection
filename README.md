@@ -71,7 +71,9 @@ P.S.: The "data.pickle" is provided in this repo for TCGA dataset.
 
 * MRI embedder
 
-
+```
+python MRI_embedder\classifier.py --modalities t1ce flair --fold 0
+```
 
 
 * WSI embedder

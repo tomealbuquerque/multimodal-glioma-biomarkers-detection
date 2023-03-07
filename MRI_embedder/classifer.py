@@ -15,9 +15,8 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, classificat
 
 
 parser = argparse.ArgumentParser(description='Multimodal MRI branch - multiclass classifier')
-parser.add_argument('--modalities', nargs='+', type=str, help='modalities for training. Do not mix segmented and '
-                                                              'unsegmented modalities. It can contain one or more '
-                                                              'modalities.')
+parser.add_argument('--modalities', nargs='+', help='modalities for training. Do not mix segmented and unsegmented '
+                                                    'modalities. It can contain one or more modalities.')
 parser.add_argument('--fold', type=int, default=0, help='select k-fold')
 parser.add_argument('--batch_size', type=int, default=16, help='mini-batch size (default: 128)')
 parser.add_argument('--nepochs', type=int, default=100, help='number of epochs')

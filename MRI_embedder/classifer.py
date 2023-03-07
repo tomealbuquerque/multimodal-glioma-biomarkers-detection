@@ -13,6 +13,7 @@ from monai.transforms import EnsureChannelFirst, Compose, RandRotate90, Resize, 
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, classification_report, mean_absolute_error, \
     roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 
+
 parser = argparse.ArgumentParser(description='Multimodal MRI branch - multiclass classifier')
 parser.add_argument('--modalities', nargs='+', type=str, help='modalities for training. Do not mix segmented and '
                                                               'unsegmented modalities. It can contain one or more '
@@ -31,7 +32,7 @@ parser.add_argument('--model_choice', default='denseNet121', choices=['denseNet1
                     help='Training model, default: denseNet121')
 
 
-def get_images_labels(modality, fold=0, dataset_type='train'):
+def get_images_labels(modality, fold=0, dataset_type='train', num_classes=3):
     data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
     images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][
         dataset_type]
@@ -44,8 +45,10 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
         else:
             ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
 
-        lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
-
+        if num_classes == 3:
+            lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
+        else:
+            lbs += [int(all([label['idh1'], label['ioh1p15q']])) for label in labels]
     return ims, np.array(lbs, dtype=np.int64)
 
 
@@ -70,12 +73,12 @@ def train_and_eval(modality, fold=0, batch_size=16, max_epochs=100, lower_lr=5e-
                                 Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
 
-    images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
+    images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold, num_classes=num_classes)
     train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers,
                               pin_memory=torch.cuda.is_available())
 
-    images, labels = get_images_labels(modality=modality, dataset_type='test', fold=fold)
+    images, labels = get_images_labels(modality=modality, dataset_type='test', fold=fold, num_classes=num_classes)
     val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=num_workers,
                             pin_memory=torch.cuda.is_available())
@@ -167,7 +170,7 @@ def train_and_eval(modality, fold=0, batch_size=16, max_epochs=100, lower_lr=5e-
                 best_metric = metric
                 best_metric_epoch = epoch + 1
                 torch.save(model.state_dict(),
-                           os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth"))
+                           os.path.join(trial_path, "best_class_ckpt_best_tiles.pth"))
                 print("saved new best metric model")
             if verbose:
                 print(f"current epoch: {epoch + 1} current accuracy: {metric:.4f} "
@@ -178,12 +181,13 @@ def train_and_eval(modality, fold=0, batch_size=16, max_epochs=100, lower_lr=5e-
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
 
     # Evaluate
-    images, labels = get_images_labels(modality=[random.choice(modality)], dataset_type='test', fold=fold)
+    images, labels = get_images_labels(modality=[random.choice(modality)], dataset_type='test',
+                                       fold=fold, num_classes=num_classes)
     test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=num_workers,
                                  pin_memory=torch.cuda.is_available())
 
-    model.load_state_dict(torch.load(os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth")))
+    model.load_state_dict(torch.load(os.path.join(trial_path, "best_class_ckpt_best_tiles.pth")))
     model.eval()
 
     y_true = []
@@ -203,7 +207,7 @@ def train_and_eval(modality, fold=0, batch_size=16, max_epochs=100, lower_lr=5e-
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
 
-    print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
+    target_names = ['0', '1', '2'] if num_classes == 3 else ['0', '1']
 
     msg = f"""
     Model: {model.__str__().split('(')[0]}
@@ -219,15 +223,17 @@ def train_and_eval(modality, fold=0, batch_size=16, max_epochs=100, lower_lr=5e-
     accuracy: {accuracy_score(y_true, y_pred)}
     balanced accuracy: {balanced_accuracy_score(y_true, y_pred)}
     mae: {mean_absolute_error(y_true, y_pred)}
-    auc: {roc_auc_score(y_true, np.vstack(y_pred_prob), multi_class='ovr')}
 
-    Classfication report:
-    {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
+    Classification report:
+    {classification_report(y_true, y_pred, target_names=target_names, digits=4)}
 
     Model: {model}
 
     Optimizer: {optimizer}    
     """
+
+    if num_classes == 3:
+        msg += f'\n\n auc: {roc_auc_score(y_true, np.vstack(y_pred_prob), multi_class="ovr")}'
 
     f.write(msg)
     f.close()
@@ -249,8 +255,9 @@ def train_and_eval(modality, fold=0, batch_size=16, max_epochs=100, lower_lr=5e-
     plt.xlabel("epoch")
     plt.savefig(os.path.join(trial_path, 'loss_auc.png'))
 
-    cm = confusion_matrix(y_true, y_pred, labels=[0, 1, 2])
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1, 2])
+    labels = [0, 1, 2] if num_classes == 3 else [0, 1]
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
     disp.plot()
     plt.savefig(os.path.join(trial_path, 'confusion_matrix.png'))
 

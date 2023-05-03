@@ -27,7 +27,7 @@ def get_images_labels(modality, fold=0, dataset_type='train'):
 
         lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
 
-    return ims, np.array(lbs, dtype=np.int64)
+    return ims, np.array(lbs, dtype=np.int64), images
 
 
 def main(test_modality, ckpt_path, fold=0, verbose=False):
@@ -43,16 +43,9 @@ def main(test_modality, ckpt_path, fold=0, verbose=False):
     
     print(ckpt_path)
     p = ckpt_path.split(os.sep)[-1].split('.')[0]
-    trial_name = f'predictions_MRI_{p}'
-    trial_name += '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
-    trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
-                              f"trial_{trial_name}")
+    test_mod = '_'.join(test_modality)
 
-    os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"),
-                exist_ok=True)
-    os.makedirs(trial_path, exist_ok=True)
-
-    f = open(os.path.join(trial_path, 'records.csv'), 'w')
+    f = open(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results", f'{p}_on_{test_mod}.csv'), 'w')
     # model = monai.networks.nets.EfficientNetBN(model_name="efficientnet-b0", spatial_dims=3, in_channels=1, num_classes=num_classes)
     # model = monai.networks.nets.ViT(in_channels=1, img_size=(96,96,96), patch_size=(16,16,16), pos_embed='conv', classification=True, num_classes=num_classes, post_activation='x')
     
@@ -65,30 +58,41 @@ def main(test_modality, ckpt_path, fold=0, verbose=False):
     model = model.to(device)
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
     # Evaluate
-    images, labels = get_images_labels(modality=test_modality, dataset_type='test', fold=fold)
+    images, labels, file_names = get_images_labels(modality=test_modality, dataset_type='test', fold=fold)
     test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2, pin_memory=torch.cuda.is_available())
 
     y_true = []
     y_pred = []
     y_pred_prob = []
-    
+    if len(test_modality) > 1:
+        files1 = []
+        files2 = []
+        for file_name in file_names:
+            files1.append(file_name[test_modality[0]])
+            files2.append(file_name[test_modality[1]])
+        file_names = files1 + files2
+
     with torch.no_grad():
-        for test_data in test_dataloader:
+        
+        for idx, test_data in enumerate(test_dataloader):
             test_images, test_labels = test_data[0].to(device), test_data[1].to(device)
             test_outputs = model(test_images)
-            y_pred_prob.append(nn.Softmax(dim=1)(test_outputs).cpu().numpy()[0])
+            # y_pred_prob.append(nn.Softmax(dim=1)(test_outputs).cpu().numpy()[0])
+            
+            probs = nn.Softmax(dim=1)(test_outputs)[0]
             test_outputs = test_outputs.argmax(dim=1)
-            f.write(f'{test_images},{test_labels},{test_outputs},{y_pred_prob[0]},{y_pred_prob[1]},{y_pred_prob[2]}')
+            
+            if len(test_modality) > 1:
+                f.write(f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
+            else:
+                f.write(f'{file_names[idx][test_modality[0]]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
+            
             # test_outputs = model(test_images)[0].argmax(dim=1) # ViT
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
 
-    # for name, target, prob, pred in zip(val_dset.slidenames, val_dset.targets, probs,Phat):
-        
-    #     fp.write('{},{},{},{},{},{}\n'.format(name, target, pred, prob[0],prob[1],prob[2]))
-        
     # msg = f"""
     # Eval: {ckpt_path}
 
@@ -117,12 +121,13 @@ def main(test_modality, ckpt_path, fold=0, verbose=False):
 if __name__ == "__main__":
     
     for idx in range(5):
-        for tm in [['t1ce_block'], ['flair_block'], ['t1ce_block', 'flair_block']]:
-            # path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/orig_t1ce_flair_fold{idx}.pth'
-            path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/multiclass_fold{idx}_t1ce_flair.pth'
+        for tm in [['t1ce'], ['flair'], ['t1ce', 'flair']]:
+            
+            path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/orig_t1ce_flair_fold{idx}.pth'
+            # path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/multiclass_fold{idx}_t1ce_flair.pth'
             main(test_modality=tm, ckpt_path=path, fold=idx, verbose=True)
-            break
-            # path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/orig_t1ce_fold{idx}.pth'
-            path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/multiclass_fold{idx}_t1ce.pth'
+            # break
+            path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/orig_t1ce_fold{idx}.pth'
+            # path = f'deep-multimodal-glioma-prognosis/MRI_biomarkers/saved_ckpt/multiclass_fold{idx}_t1ce.pth'
             main(test_modality=tm, ckpt_path=path, fold=idx, verbose=True)
-        break
+        # break

@@ -11,11 +11,11 @@ from scipy.ndimage import label, center_of_mass
 
 
 
-folder = '/dss/dssfs04/pn25ke/pn25ke-dss-0001/albuquerque/Glioma_EPIC'
+folder = '/dss/dssfs04/pn25ke/pn25ke-dss-0001/Glioma_EPIC'
 sequence_order = ["t1c", "flair"]
 ps = 96
 
-df = pd.read_csv(os.path.join(folder, "Gliome_EPIC_PhenoData.csv"))
+df = pd.read_csv(os.path.join(folder, "TUM_dataset_glioma.csv"))
 df = df.dropna(subset=['Pseudonym', 'IDH', 'LOH_1p19q'])
 
 subfolder_ids = []

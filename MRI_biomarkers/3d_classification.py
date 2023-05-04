@@ -12,30 +12,34 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, classificat
 import matplotlib.pyplot as plt
 
 
-def get_images_labels(modality, fold=0, dataset_type='train'):
-    data_path = 'deep-multimodal-glioma-prognosis/data_multimodal_tcga'
-    images, labels = pd.read_pickle(os.path.join(data_path, 'modified_multimodal_glioma_data.pickle'))[fold][
+def get_images_labels(modality, fold=0, dataset_type='train', data_type='epic'):
+    data_path = 'deep-multimodal-glioma-prognosis/data_tum_epic'
+    images, labels = pd.read_pickle(os.path.join(data_path, 'multimodal_glioma_data.pickle'))[fold][
         dataset_type]
 
     ims, lbs = [], []
 
     for mod in modality:
-        if '_block' in mod:
-            ims += [os.path.join(data_path, f[mod]) for f in images]
-        else:
-            ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
+        # if '_block' in mod:
+        #     ims += [os.path.join(data_path, f[mod]) for f in images]
+        # else:
+        #     ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
 
-        lbs += [sum([label['idh1'], label['ioh1p15q']]) for label in labels]
+        # codeletion column name is different in csv. TUM: 1p19q; TCGA: ioh1p15q
+        codeletion = '1p19q' if data_type == 'epic' else 'ioh1p15q'
+        # lbs += [sum([label['idh1'], label[codeletion]]) for label in labels]
 
-    return ims, np.array(lbs, dtype=np.int64)
+        ims += [x[mod] for x in images]
+        lbs += [lb['idh1']+lb[codeletion] for lb in labels]
+
+    return ims, np.array(lbs, dtype=np.int64), images
 
 
 def main(modality, fold, verbose=False):
     resize_ps = 96
 
-    # modality = ['flair_block']
+    modality = ['flair_block', 't1ce_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
-    # fold = 2
     batch_size = 16
     max_epochs = 100
     lower_lr = 5e-5
@@ -49,13 +53,13 @@ def main(modality, fold, verbose=False):
         [ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
 
-    images, labels = get_images_labels(modality=modality, dataset_type='train', fold=fold)
+    images, labels, _ = get_images_labels(modality=modality, dataset_type='train', fold=fold)
     train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2,
                               pin_memory=torch.cuda.is_available())
 
-    images, labels = get_images_labels(modality=modality, dataset_type='test', fold=fold)
-    val_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
+    test_images, test_labels, test_image_files = get_images_labels(modality=modality, dataset_type='test', fold=fold)
+    val_ds = ImageDataset(image_files=test_images, labels=test_labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=2, pin_memory=torch.cuda.is_available())
 
     if verbose:
@@ -75,10 +79,10 @@ def main(modality, fold, verbose=False):
     optimizer = torch.optim.Adam(model.parameters(), round(steepest_lr, 5))
 
     trial_name = '_'.join(modality)
-    trial_name += f'_fold{fold}_'
-    trial_name += '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
+    path_name = trial_name + f'_fold{fold}_'
+    trial_name = path_name + '_'.join([pd.Timestamp.now().strftime('%Y_%m_%d_%X')])
     trial_path = os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
-                              f"trial_{trial_name}")
+                              f"{trial_name}")
 
     os.makedirs(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results"),
                 exist_ok=True)
@@ -152,10 +156,9 @@ def main(modality, fold, verbose=False):
     f.write(f"train completed, best_metric: {best_metric:.4f} at epoch: {best_metric_epoch}\n\n")
 
     # Evaluate
-    images, labels = get_images_labels(modality=[random.choice(modality)], dataset_type='test', fold=fold)
-    test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
-    test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2,
-                                 pin_memory=torch.cuda.is_available())
+    f_csv = open(os.path.join(os.getcwd(), "deep-multimodal-glioma-prognosis", "MRI_biomarkers", "results",
+                          f'epic_{path_name}.csv'), 'w')
+    f_csv.write('file,target,prediction,probability_0,probability_1,probability_2\n')
 
     model.load_state_dict(torch.load(os.path.join(trial_path, "best_multiclass_ckpt_best_tiles.pth")))
     model.eval()
@@ -165,17 +168,26 @@ def main(modality, fold, verbose=False):
     y_pred_prob = []
 
     with torch.no_grad():
-        for test_data in test_dataloader:
+        for test_data in val_loader:
             test_images, test_labels = test_data[0].to(device), test_data[1].to(device)
             
             test_outputs = model(test_images)
             y_pred_prob.append(nn.Softmax(dim=1)(test_outputs).cpu().numpy()[0])
             test_outputs = test_outputs.argmax(dim=1)
             # test_outputs = model(test_images)[0].argmax(dim=1) # ViT
+            if len(modality) > 1:
+                f_csv.write(
+                    f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
+            else:
+                f_csv.write(
+                    f'{file_names[idx][test_modality[0]]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
+
+            
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
                 y_pred.append(test_outputs[i].item())
-
+    
+    f_csv.close()
     print(classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4))
 
     msg = f"""

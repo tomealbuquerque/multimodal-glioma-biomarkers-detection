@@ -1,3 +1,7 @@
+# =============================================================================
+# Inference on TUM epic MRI data using TCGA trained data
+# =============================================================================
+
 import os
 import numpy as np
 import pandas as pd
@@ -8,13 +12,13 @@ from monai.data import ImageDataset, DataLoader
 from monai.transforms import EnsureChannelFirst, Compose, Resize, ScaleIntensity
 
 
-root_dir = '/dss/dssfs04/pn25ke/pn25ke-dss-0001/albuquerque/Glioma_EPIC'
+root_dir = '/dss/dssfs04/pn25ke/pn25ke-dss-0001/Glioma_EPIC'
 
 def save_mri_file_to_dict():
 
-    df = pd.read_csv(os.path.join(root_dir, 'Gliome_EPIC_PhenoData.csv'))
+    df = pd.read_csv(os.path.join(root_dir, 'TUM_dataset_glioma.csv'))
 
-    df = df.dropna(subset=['IDH', 'LOH_1p19q'])
+    df = df.dropna(subset=['IDH', '1p19q'])
     X, y = [], []
 
     for root, dirs, files in os.walk(root_dir):

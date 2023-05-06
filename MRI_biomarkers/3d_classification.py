@@ -32,13 +32,13 @@ def get_images_labels(modality, fold=0, dataset_type='train', data_type='epic'):
         ims += [x[mod] for x in images]
         lbs += [lb['idh1']+lb[codeletion] for lb in labels]
 
-    return ims, np.array(lbs, dtype=np.int64), images
+    return ims, np.array(lbs, dtype=np.int64), ims
 
 
 def main(modality, fold, verbose=False):
     resize_ps = 96
 
-    modality = ['flair_block', 't1ce_block']
+    # modality = ['flair_block', 't1ce_block']
     reader = 'NumpyReader' if all(['_block' in mod for mod in modality]) else None
     batch_size = 16
     max_epochs = 100
@@ -58,7 +58,7 @@ def main(modality, fold, verbose=False):
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2,
                               pin_memory=torch.cuda.is_available())
 
-    test_images, test_labels, test_image_files = get_images_labels(modality=modality, dataset_type='test', fold=fold)
+    test_images, test_labels, file_names = get_images_labels(modality=modality, dataset_type='test', fold=fold)
     val_ds = ImageDataset(image_files=test_images, labels=test_labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=2, pin_memory=torch.cuda.is_available())
 
@@ -167,21 +167,29 @@ def main(modality, fold, verbose=False):
     y_pred = []
     y_pred_prob = []
 
+    images, labels, file_names = get_images_labels(modality=modality, dataset_type='test', fold=fold)
+    test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
+    test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2,
+                                 pin_memory=torch.cuda.is_available())
+    # print('FILE_NAMES: ', file_names)
+    # print('TEST_DataLoader', len(test_dataloader))
+
     with torch.no_grad():
-        for test_data in val_loader:
+        for idx, test_data in enumerate(test_dataloader):
             test_images, test_labels = test_data[0].to(device), test_data[1].to(device)
             
             test_outputs = model(test_images)
             y_pred_prob.append(nn.Softmax(dim=1)(test_outputs).cpu().numpy()[0])
+            
+            probs = nn.Softmax(dim=1)(test_outputs)[0]
             test_outputs = test_outputs.argmax(dim=1)
             # test_outputs = model(test_images)[0].argmax(dim=1) # ViT
-            if len(modality) > 1:
-                f_csv.write(
-                    f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
-            else:
-                f_csv.write(
-                    f'{file_names[idx][test_modality[0]]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
-
+            # if len(modality) <= 1:
+            #     f_csv.write(
+            #         f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
+            # else:
+                # f_csv.write(f'{file_names[idx][modality[0]]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
+            f_csv.write(f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
             
             for i in range(len(test_outputs)):
                 y_true.append(test_labels[i].item())
@@ -203,7 +211,6 @@ def main(modality, fold, verbose=False):
     accuracy: {accuracy_score(y_true, y_pred)}
     balanced accuracy: {balanced_accuracy_score(y_true, y_pred)}
     mae: {mean_absolute_error(y_true, y_pred)}
-    auc: {roc_auc_score(y_true, np.vstack(y_pred_prob), multi_class='ovr')}
 
     Classfication report:
     {classification_report(y_true, y_pred, target_names=['0', '1', '2'], digits=4)}
@@ -245,6 +252,9 @@ def main(modality, fold, verbose=False):
 
 
 if __name__ == "__main__":
+    # main(modality=['t1ce', 'flair'], fold=0, verbose=True)
     for i in range(5):
         main(modality=['t1ce', 'flair'], fold=i, verbose=True)
         main(modality=['t1ce'], fold=i, verbose=True)
+        main(modality=['t1ce_block', 'flair_block'], fold=i, verbose=True)
+        main(modality=['t1ce_block'], fold=i, verbose=True)

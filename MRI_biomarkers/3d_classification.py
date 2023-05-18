@@ -13,25 +13,29 @@ import matplotlib.pyplot as plt
 
 
 def get_images_labels(modality, fold=0, dataset_type='train', data_type='epic'):
-    data_path = 'deep-multimodal-glioma-prognosis/data_tum_epic'
-    images, labels = pd.read_pickle(os.path.join(data_path, 'multimodal_glioma_data.pickle'))[fold][
-        dataset_type]
+    root_dir = 'deep-multimodal-glioma-prognosis'
+    data_path = 'data_tum_epic' if data_type == 'epic' else 'data_multimodal_tcga'
+    pickle_file = 'multimodal_glioma_data.pickle' if data_type == 'epic' else 'modified_multimodal_glioma_data.pickle'
+    pickle_path = os.path.join(root_dir, data_path, pickle_file)
+    # codeletion column name is different in csv. TUM: 1p19q; TCGA: ioh1p15q
+    codeletion = '1p19q' if data_type == 'epic' else 'ioh1p15q'
+
+    images, labels = pd.read_pickle(pickle_path)[fold][dataset_type]
 
     ims, lbs = [], []
 
     for mod in modality:
-        # if '_block' in mod:
-        #     ims += [os.path.join(data_path, f[mod]) for f in images]
-        # else:
-        #     ims += [os.path.join(data_path, f[mod].replace('\\', os.sep)) for f in images]
-
-        # codeletion column name is different in csv. TUM: 1p19q; TCGA: ioh1p15q
-        codeletion = '1p19q' if data_type == 'epic' else 'ioh1p15q'
-        # lbs += [sum([label['idh1'], label[codeletion]]) for label in labels]
-
-        ims += [x[mod] for x in images]
+        if data_type == 'epic':
+            ims += [x[mod] for x in images]
+            
+        else:
+            if '_block' in mod:
+                ims += [os.path.join(root_dir, data_path, f[mod]) for f in images]
+            else:
+                ims += [os.path.join(root_dir, data_path, f[mod].replace('\\', os.sep)) for f in images]
+        
         lbs += [lb['idh1']+lb[codeletion] for lb in labels]
-
+    
     return ims, np.array(lbs, dtype=np.int64), ims
 
 
@@ -53,15 +57,26 @@ def main(modality, fold, verbose=False):
         [ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps)), RandRotate90()])
     val_transforms = Compose([ScaleIntensity(), EnsureChannelFirst(), Resize((resize_ps, resize_ps, resize_ps))])
 
-    images, labels, _ = get_images_labels(modality=modality, dataset_type='train', fold=fold)
+    images_tcga, labels_tcga, _ = get_images_labels(modality=modality, dataset_type='train', fold=fold, data_type='tcga')
+    images_epic, labels_epic, _ = get_images_labels(modality=modality, dataset_type='train', fold=fold, data_type='epic')
+    images = images_tcga + images_epic
+    labels = np.concatenate((labels_tcga, labels_epic), axis=None)
+    # print(f'images: {images};\nlabels: {labels}')
     train_ds = ImageDataset(image_files=images, labels=labels, transform=train_transforms, reader=reader)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2,
                               pin_memory=torch.cuda.is_available())
 
-    test_images, test_labels, file_names = get_images_labels(modality=modality, dataset_type='test', fold=fold)
+    test_images_tcga, test_labels_tcga, file_names_tcga = get_images_labels(modality=modality, dataset_type='test', fold=fold, data_type='tcga')
+    test_images_epic, test_labels_epic, file_names_epic = get_images_labels(modality=modality, dataset_type='test', fold=fold, data_type='epic')
+    test_images = test_images_tcga + test_images_epic
+    test_labels = np.concatenate((test_labels_tcga, test_labels_epic), axis=None)
+    file_names = file_names_tcga + file_names_epic
+    print(f'test labels tcga: {len(test_labels_tcga)}; epic: {len(test_labels_epic)}')
+
     val_ds = ImageDataset(image_files=test_images, labels=test_labels, transform=val_transforms, reader=reader)
     val_loader = DataLoader(val_ds, batch_size=batch_size, num_workers=2, pin_memory=torch.cuda.is_available())
-
+    print(f'sanity check: test image length {len(test_images)}, test label length {len(test_labels)}')
+    print(f'sanity check: train image length {len(images)}, train label length {len(labels)}')
     if verbose:
         print(f'Train data with {len(train_ds)} images loaded; val data with {len(val_ds)} images loaded!')
 
@@ -167,8 +182,8 @@ def main(modality, fold, verbose=False):
     y_pred = []
     y_pred_prob = []
 
-    images, labels, file_names = get_images_labels(modality=modality, dataset_type='test', fold=fold)
-    test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
+    # images, labels, file_names = get_images_labels(modality=modality, dataset_type='test', fold=fold)
+    # test_ds = ImageDataset(image_files=images, labels=labels, transform=val_transforms, reader=reader)
     test_dataloader = DataLoader(test_ds, batch_size=1, shuffle=True, num_workers=2,
                                  pin_memory=torch.cuda.is_available())
     # print('FILE_NAMES: ', file_names)
@@ -183,12 +198,6 @@ def main(modality, fold, verbose=False):
             
             probs = nn.Softmax(dim=1)(test_outputs)[0]
             test_outputs = test_outputs.argmax(dim=1)
-            # test_outputs = model(test_images)[0].argmax(dim=1) # ViT
-            # if len(modality) <= 1:
-            #     f_csv.write(
-            #         f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
-            # else:
-                # f_csv.write(f'{file_names[idx][modality[0]]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
             f_csv.write(f'{file_names[idx]},{test_labels.detach().cpu().numpy()[0]},{test_outputs.detach().cpu().numpy()[0]},{probs[0].item()},{probs[1].item()},{probs[2].item()}\n')
             
             for i in range(len(test_outputs)):

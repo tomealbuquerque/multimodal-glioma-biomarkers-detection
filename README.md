@@ -1,5 +1,7 @@
 # Multimodal Context-Aware Detection of Glioma Biomarkers using MRI and WSI
 
+https://link.springer.com/chapter/10.1007/978-3-031-47425-5_15
+
 by Tomé Albuquerque, Mei Ling Fang, Benedikt Wiestler, Claire Delbridge, Maria João M. Vasconcelos, Jaime S. Cardoso and
 Peter Schüffler
 
@@ -154,6 +156,8 @@ python Plot_box_plots.py
 
 ## <div align="center">Citation</div>
 If you find this work useful for your research, please cite our paper:
+
+Albuquerque, T. et al. (2023). Multimodal Context-Aware Detection of Glioma Biomarkers Using MRI and WSI. In: Woo, J., et al. Medical Image Computing and Computer Assisted Intervention – MICCAI 2023 Workshops. MICCAI 2023. Lecture Notes in Computer Science, vol 14394. Springer, Cham. https://doi.org/10.1007/978-3-031-47425-5_15
 
 -----
 

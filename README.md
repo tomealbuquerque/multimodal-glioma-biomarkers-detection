@@ -156,8 +156,55 @@ python Plot_box_plots.py
 
 ## <div align="center">Citation</div>
 If you find this work useful for your research, please cite our paper:
+```
+@InProceedings{10.1007/978-3-031-47425-5_15,
+author="Albuquerque, Tom{\'e}
+and Fang, Mei Ling
+and Wiestler, Benedikt
+and Delbridge, Claire
+and Vasconcelos, Maria Jo{\~a}o M.
+and Cardoso, Jaime S.
+and Sch{\"u}ffler, Peter",
+editor="Woo, Jonghye
+and Hering, Alessa
+and Silva, Wilson
+and Li, Xiang
+and Fu, Huazhu
+and Liu, Xiaofeng
+and Xing, Fangxu
+and Purushotham, Sanjay
+and Mathai, Tejas S.
+and Mukherjee, Pritam
+and De Grauw, Max
+and Beets Tan, Regina
+and Corbetta, Valentina
+and Kotter, Elmar
+and Reyes, Mauricio
+and Baumgartner, Christian F.
+and Li, Quanzheng
+and Leahy, Richard
+and Dong, Bin
+and Chen, Hao
+and Huo, Yuankai
+and Lv, Jinglei
+and Xu, Xinxing
+and Li, Xiaomeng
+and Mahapatra, Dwarikanath
+and Cheng, Li
+and Petitjean, Caroline
+and Presles, Beno{\^i}t",
+title="Multimodal Context-Aware Detection of Glioma Biomarkers Using MRI and WSI",
+booktitle="Medical Image Computing and Computer Assisted Intervention -- MICCAI 2023 Workshops",
+year="2023",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="157--167",
+abstract="The most malignant tumors of the central nervous system are adult-type diffuse gliomas. Historically, glioma subtype classification has been based on morphological features. However, since 2016, WHO recognizes that molecular evaluation is critical for subtyping. Among molecular markers, the mutation status of IDH1 and the codeletion of 1p/19q are crucial for the precise diagnosis of these malignancies. In pathology laboratories, however, manual screening for those markers is time-consuming and susceptible to error. To overcome these limitations, we propose a novel multimodal biomarker classification method that integrates image features derived from brain magnetic resonance imaging and histopathological exams. The proposed model consists of two branches, the first branch takes as input a multi-scale Hematoxylin and Eosin whole slide image, and the second branch uses the pre-segmented region of interest from the magnetic resonance imaging. Both branches are based on convolutional neural networks. After passing the exams by the two embedding branches, the output feature vectors are concatenated, and a multi-layer perceptron is used to classify the glioma biomarkers as a multi-class problem. In this work, several fusion strategies were studied, including a cascade model with mid-fusion; a mid-fusion model, a late fusion model, and a mid-context fusion model. The models were tested using a publicly available data set from The Cancer Genome Atlas. Our cross-validated classification models achieved an area under the curve of 0.874, 0.863, and 0.815 for the proposed multimodal, magnetic resonance imaging, and Hematoxylin and Eosin stain slide images respectively, indicating our multimodal model outperforms its unimodal counterparts and the state-of-the-art glioma biomarker classification methods.",
+isbn="978-3-031-47425-5"
+}
+```
 
-Albuquerque, T. et al. (2023). Multimodal Context-Aware Detection of Glioma Biomarkers Using MRI and WSI. In: Woo, J., et al. Medical Image Computing and Computer Assisted Intervention – MICCAI 2023 Workshops. MICCAI 2023. Lecture Notes in Computer Science, vol 14394. Springer, Cham. https://doi.org/10.1007/978-3-031-47425-5_15
+
 
 -----
 
